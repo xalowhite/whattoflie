@@ -1,0 +1,2961 @@
+{
+  "flies": [
+    {
+      "id": "zebra-midge",
+      "name": "Zebra Midge",
+      "category": "nymph",
+      "sizes": [18, 20, 22, 24],
+      "target_species": ["trout"],
+      "difficulty": "beginner",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "black",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Scud Hook",
+          "type": "hook",
+          "sizes": [18, 20, 22, 24],
+          "brands": ["Tiemco 2457", "Umpqua U202"],
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Any curved nymph hook works"
+        },
+        {
+          "name": "Ultra Wire",
+          "type": "wire",
+          "color": "silver or copper",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Any fine wire or tinsel"
+        },
+        {
+          "name": "Glass Bead",
+          "type": "bead",
+          "sizes": ["2mm", "2.5mm", "3mm"],
+          "color": "silver or copper",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Tungsten bead works too"
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=S7C3qN5c0kM",
+          "title": "Zebra Midge - Tightline Productions"
+        }
+      ]
+    },
+    {
+      "id": "woolly-bugger",
+      "name": "Woolly Bugger",
+      "category": "streamer",
+      "sizes": [4, 6, 8, 10, 12],
+      "target_species": ["trout", "bass", "pike", "panfish"],
+      "difficulty": "beginner",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "black or olive",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Streamer Hook",
+          "type": "hook",
+          "sizes": [4, 6, 8, 10, 12],
+          "brands": ["Tiemco 5263", "Umpqua U506", "Mustad 9672"],
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Any 3x-4x long streamer hook"
+        },
+        {
+          "name": "Marabou",
+          "type": "feather",
+          "color": "black, olive, or brown",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Chenille",
+          "type": "body_material",
+          "color": "black, olive, or brown",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Dubbing or estaz works"
+        },
+        {
+          "name": "Hackle",
+          "type": "feather",
+          "color": "black, brown, or grizzly",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Bead Head",
+          "type": "bead",
+          "sizes": ["3mm", "4mm", "5mm"],
+          "color": "gold, copper, or black",
+          "required": false,
+          "substitutable": true,
+          "substitute_note": "Can tie without bead"
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=vJvJU0RdJiM",
+          "title": "Woolly Bugger - Kelly Galloup"
+        }
+      ]
+    },
+    {
+      "id": "pheasant-tail",
+      "name": "Pheasant Tail Nymph",
+      "category": "nymph",
+      "sizes": [12, 14, 16, 18, 20],
+      "target_species": ["trout"],
+      "difficulty": "beginner",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "brown or tan",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Nymph Hook",
+          "type": "hook",
+          "sizes": [12, 14, 16, 18, 20],
+          "brands": ["Tiemco 3761", "Umpqua U203"],
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Any 1x or 2x long nymph hook"
+        },
+        {
+          "name": "Pheasant Tail Fibers",
+          "type": "feather",
+          "color": "natural brown",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Goose biots work in a pinch"
+        },
+        {
+          "name": "Copper Wire",
+          "type": "wire",
+          "color": "copper",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Any fine wire"
+        },
+        {
+          "name": "Peacock Herl",
+          "type": "herl",
+          "color": "natural",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Can use dubbing instead"
+        },
+        {
+          "name": "Bead Head",
+          "type": "bead",
+          "sizes": ["2mm", "2.5mm", "3mm"],
+          "color": "gold or copper",
+          "required": false,
+          "substitutable": true
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=kZsfFZm72iQ",
+          "title": "Pheasant Tail Nymph - Tightline Productions"
+        }
+      ]
+    },
+    {
+      "id": "elk-hair-caddis",
+      "name": "Elk Hair Caddis",
+      "category": "dry_fly",
+      "sizes": [12, 14, 16, 18],
+      "target_species": ["trout"],
+      "difficulty": "intermediate",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "tan or brown",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Dry Fly Hook",
+          "type": "hook",
+          "sizes": [12, 14, 16, 18],
+          "brands": ["Tiemco 100", "Umpqua U200"],
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Any standard dry fly hook"
+        },
+        {
+          "name": "Elk Hair",
+          "type": "hair",
+          "color": "natural tan",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Deer hair works but elk is better"
+        },
+        {
+          "name": "Dubbing",
+          "type": "dubbing",
+          "color": "tan, olive, or green",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Any natural dubbing"
+        },
+        {
+          "name": "Hackle",
+          "type": "feather",
+          "color": "brown or ginger",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Grizzly works too"
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=gG15EhWaFDg",
+          "title": "Elk Hair Caddis - Tightline Productions"
+        }
+      ]
+    },
+    {
+      "id": "adams",
+      "name": "Adams",
+      "category": "dry_fly",
+      "sizes": [12, 14, 16, 18, 20],
+      "target_species": ["trout"],
+      "difficulty": "intermediate",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "black or gray",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Dry Fly Hook",
+          "type": "hook",
+          "sizes": [12, 14, 16, 18, 20],
+          "brands": ["Tiemco 100", "Umpqua U200"],
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Any standard dry fly hook"
+        },
+        {
+          "name": "Grizzly Hackle",
+          "type": "feather",
+          "color": "grizzly",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Brown Hackle",
+          "type": "feather",
+          "color": "brown",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Muskrat Dubbing",
+          "type": "dubbing",
+          "color": "gray",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Any gray dubbing works"
+        },
+        {
+          "name": "Grizzly Hackle Tips",
+          "type": "feather",
+          "color": "grizzly",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Can use same as hackle"
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=dUMsI8dYgvU",
+          "title": "Adams Dry Fly - Fly Fish Food"
+        }
+      ]
+    },
+    {
+      "id": "clouser-minnow",
+      "name": "Clouser Minnow",
+      "category": "streamer",
+      "sizes": ["1/0", 1, 2, 4, 6, 8],
+      "target_species": ["bass", "trout", "saltwater", "pike"],
+      "difficulty": "beginner",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "white or clear",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Streamer Hook",
+          "type": "hook",
+          "sizes": ["1/0", 1, 2, 4, 6, 8],
+          "brands": ["Tiemco 811S", "Gamakatsu SL11-3H"],
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Any straight-eye streamer hook"
+        },
+        {
+          "name": "Dumbbell Eyes",
+          "type": "eyes",
+          "sizes": ["small", "medium", "large"],
+          "color": "metallic or painted",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Lead eyes or bead chain work"
+        },
+        {
+          "name": "Bucktail",
+          "type": "hair",
+          "color": "white and chartreuse (or other combos)",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Synthetic fibers like SF Blend work"
+        },
+        {
+          "name": "Flash",
+          "type": "flash",
+          "color": "matching or contrasting",
+          "required": false,
+          "substitutable": true,
+          "substitute_note": "Krystal Flash or Flashabou"
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=P_5gWLkuL8Y",
+          "title": "Clouser Minnow - Orvis Guide to Fly Tying"
+        }
+      ]
+    },
+    {
+      "id": "copper-john",
+      "name": "Copper John",
+      "category": "nymph",
+      "sizes": [12, 14, 16, 18],
+      "target_species": ["trout"],
+      "difficulty": "intermediate",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "black or brown",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Nymph Hook",
+          "type": "hook",
+          "sizes": [12, 14, 16, 18],
+          "brands": ["Tiemco 5262", "Umpqua U203"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Copper Wire",
+          "type": "wire",
+          "color": "copper",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Goose Biots",
+          "type": "feather",
+          "color": "brown or black",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Pheasant tail works"
+        },
+        {
+          "name": "Peacock Herl",
+          "type": "herl",
+          "color": "natural",
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Partridge Feather",
+          "type": "feather",
+          "color": "natural brown",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Any soft hackle"
+        },
+        {
+          "name": "Bead Head",
+          "type": "bead",
+          "sizes": ["2.5mm", "3mm", "3.5mm"],
+          "color": "gold or copper",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Epoxy",
+          "type": "finish",
+          "color": "clear",
+          "required": false,
+          "substitutable": true,
+          "substitute_note": "UV resin or lacquer"
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=EKbD5wFmGhg",
+          "title": "Copper John - Fly Fish Food"
+        }
+      ]
+    },
+    {
+      "id": "prince-nymph",
+      "name": "Prince Nymph",
+      "category": "nymph",
+      "sizes": [10, 12, 14, 16],
+      "target_species": ["trout"],
+      "difficulty": "beginner",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "black",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Nymph Hook",
+          "type": "hook",
+          "sizes": [10, 12, 14, 16],
+          "brands": ["Tiemco 5263", "Umpqua U203"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Goose Biots",
+          "type": "feather",
+          "color": "brown or white",
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Peacock Herl",
+          "type": "herl",
+          "color": "natural",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Brown Hackle",
+          "type": "feather",
+          "color": "brown",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Soft hackle or hen saddle"
+        },
+        {
+          "name": "Bead Head",
+          "type": "bead",
+          "sizes": ["2.5mm", "3mm", "3.5mm"],
+          "color": "gold",
+          "required": false,
+          "substitutable": true
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=fU6HnLq9RxY",
+          "title": "Prince Nymph - Tightline Productions"
+        }
+      ]
+    },
+    {
+      "id": "parachute-adams",
+      "name": "Parachute Adams",
+      "category": "dry_fly",
+      "sizes": [12, 14, 16, 18, 20],
+      "target_species": ["trout"],
+      "difficulty": "intermediate",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "gray",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Dry Fly Hook",
+          "type": "hook",
+          "sizes": [12, 14, 16, 18, 20],
+          "brands": ["Tiemco 100", "Umpqua U200"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Calf Tail",
+          "type": "hair",
+          "color": "white",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Poly yarn or antron works"
+        },
+        {
+          "name": "Grizzly Hackle",
+          "type": "feather",
+          "color": "grizzly",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Brown Hackle",
+          "type": "feather",
+          "color": "brown",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Gray Dubbing",
+          "type": "dubbing",
+          "color": "gray",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Any gray dubbing"
+        },
+        {
+          "name": "Microfibetts",
+          "type": "synthetic",
+          "color": "gray or dun",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Hackle fibers work"
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=2NJU8x_0xF8",
+          "title": "Parachute Adams - Fly Fish Food"
+        }
+      ]
+    },
+    {
+      "id": "hares-ear",
+      "name": "Hare's Ear Nymph",
+      "category": "nymph",
+      "sizes": [10, 12, 14, 16, 18],
+      "target_species": ["trout"],
+      "difficulty": "beginner",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "tan or brown",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Nymph Hook",
+          "type": "hook",
+          "sizes": [10, 12, 14, 16, 18],
+          "brands": ["Tiemco 3761", "Umpqua U203"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Hare's Ear Dubbing",
+          "type": "dubbing",
+          "color": "natural tan/brown",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Any spiky dubbing"
+        },
+        {
+          "name": "Gold Wire",
+          "type": "wire",
+          "color": "gold",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Copper wire works"
+        },
+        {
+          "name": "Turkey Tail",
+          "type": "feather",
+          "color": "natural brown",
+          "required": false,
+          "substitutable": true,
+          "substitute_note": "Pheasant tail works"
+        },
+        {
+          "name": "Bead Head",
+          "type": "bead",
+          "sizes": ["2.5mm", "3mm", "3.5mm"],
+          "color": "gold",
+          "required": false,
+          "substitutable": true
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=nC5qQ7g_TY0",
+          "title": "Gold Ribbed Hare's Ear - Tightline Productions"
+        }
+      ]
+    },
+    {
+      "id": "griffiths-gnat",
+      "name": "Griffith's Gnat",
+      "category": "dry_fly",
+      "sizes": [16, 18, 20, 22],
+      "target_species": ["trout"],
+      "difficulty": "beginner",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "black",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Dry Fly Hook",
+          "type": "hook",
+          "sizes": [16, 18, 20, 22],
+          "brands": ["Tiemco 100", "Umpqua U200"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Peacock Herl",
+          "type": "herl",
+          "color": "natural",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Grizzly Hackle",
+          "type": "feather",
+          "color": "grizzly",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Brown works too"
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=dMu7_yrQ9Qw",
+          "title": "Griffith's Gnat - Tightline Productions"
+        }
+      ]
+    },
+    {
+      "id": "stimulator",
+      "name": "Stimulator",
+      "category": "dry_fly",
+      "sizes": [6, 8, 10, 12, 14],
+      "target_species": ["trout"],
+      "difficulty": "intermediate",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "orange or yellow",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Dry Fly Hook",
+          "type": "hook",
+          "sizes": [6, 8, 10, 12, 14],
+          "brands": ["Tiemco 200R", "Umpqua U201"],
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "2x long dry fly hook"
+        },
+        {
+          "name": "Elk Hair",
+          "type": "hair",
+          "color": "natural tan",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Deer hair works"
+        },
+        {
+          "name": "Dubbing",
+          "type": "dubbing",
+          "color": "orange or yellow",
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Hackle",
+          "type": "feather",
+          "color": "brown or grizzly",
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Rubber Legs",
+          "type": "synthetic",
+          "color": "yellow or orange",
+          "required": false,
+          "substitutable": true
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=bRe9uRi4JkI",
+          "title": "Stimulator - Fly Fish Food"
+        }
+      ]
+    },
+    {
+      "id": "chernobyl-ant",
+      "name": "Chernobyl Ant",
+      "category": "dry_fly",
+      "sizes": [6, 8, 10, 12],
+      "target_species": ["trout", "bass"],
+      "difficulty": "beginner",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "black",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Dry Fly Hook",
+          "type": "hook",
+          "sizes": [6, 8, 10, 12],
+          "brands": ["Tiemco 200R", "Umpqua U201"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Foam",
+          "type": "foam",
+          "color": "black, tan, or chartreuse",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Rubber Legs",
+          "type": "synthetic",
+          "color": "black or brown",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Hackle",
+          "type": "feather",
+          "color": "brown or grizzly",
+          "required": true,
+          "substitutable": true
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=_D3m6fK4QmU",
+          "title": "Chernobyl Ant - Fly Fish Food"
+        }
+      ]
+    },
+    {
+      "id": "san-juan-worm",
+      "name": "San Juan Worm",
+      "category": "nymph",
+      "sizes": [10, 12, 14, 16],
+      "target_species": ["trout"],
+      "difficulty": "beginner",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "red or tan",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Nymph Hook",
+          "type": "hook",
+          "sizes": [10, 12, 14, 16],
+          "brands": ["Tiemco 2457", "Umpqua U202"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Ultra Chenille",
+          "type": "chenille",
+          "color": "red or tan",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Vernille or similar"
+        },
+        {
+          "name": "Bead Head",
+          "type": "bead",
+          "sizes": ["2.5mm", "3mm"],
+          "color": "gold or copper",
+          "required": false,
+          "substitutable": true
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=2bZcxl3JO8k",
+          "title": "San Juan Worm - Tightline Productions"
+        }
+      ]
+    },
+    {
+      "id": "muddler-minnow",
+      "name": "Muddler Minnow",
+      "category": "streamer",
+      "sizes": [2, 4, 6, 8, 10],
+      "target_species": ["trout", "bass", "pike"],
+      "difficulty": "advanced",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "tan or brown",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Streamer Hook",
+          "type": "hook",
+          "sizes": [2, 4, 6, 8, 10],
+          "brands": ["Tiemco 5263", "Mustad 9672"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Gold Tinsel",
+          "type": "tinsel",
+          "color": "gold",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Gold wire"
+        },
+        {
+          "name": "Turkey Quill",
+          "type": "feather",
+          "color": "mottled brown",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Oak turkey"
+        },
+        {
+          "name": "Gray Squirrel Tail",
+          "type": "hair",
+          "color": "natural gray",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Calf tail works"
+        },
+        {
+          "name": "Deer Hair",
+          "type": "hair",
+          "color": "natural tan",
+          "required": true,
+          "substitutable": false
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=xKmBhIhVXD0",
+          "title": "Muddler Minnow - Davie McPhail"
+        }
+      ]
+    },
+    {
+      "id": "lefts-deceiver",
+      "name": "Lefty's Deceiver",
+      "category": "saltwater",
+      "sizes": ["3/0", "2/0", "1/0", 1, 2],
+      "target_species": ["striped_bass", "redfish", "snook", "tarpon", "saltwater"],
+      "difficulty": "beginner",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "white",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Saltwater Hook",
+          "type": "hook",
+          "sizes": ["3/0", "2/0", "1/0", 1, 2],
+          "brands": ["Gamakatsu SL11-3H", "Owner SSW"],
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Any stainless streamer hook"
+        },
+        {
+          "name": "Saddle Hackles",
+          "type": "feather",
+          "color": "white and chartreuse (or other combos)",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Bucktail",
+          "type": "hair",
+          "color": "white",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Synthetic fibers"
+        },
+        {
+          "name": "Flash",
+          "type": "flash",
+          "color": "pearl or silver",
+          "required": false,
+          "substitutable": true
+        },
+        {
+          "name": "3D Eyes",
+          "type": "eyes",
+          "sizes": ["small", "medium"],
+          "color": "yellow with black pupil",
+          "required": false,
+          "substitutable": true
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=9Bp3wLW2_wk",
+          "title": "Lefty's Deceiver - Orvis Guide to Fly Tying"
+        }
+      ]
+    },
+    {
+      "id": "gotcha",
+      "name": "Gotcha",
+      "category": "saltwater",
+      "sizes": [2, 4, 6, 8],
+      "target_species": ["bonefish", "permit"],
+      "difficulty": "intermediate",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "tan or pink",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Bonefish Hook",
+          "type": "hook",
+          "sizes": [2, 4, 6, 8],
+          "brands": ["Gamakatsu SL11-3H", "Mustad 34007"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Bead Chain Eyes",
+          "type": "eyes",
+          "sizes": ["small", "medium"],
+          "color": "silver",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Can use lead eyes"
+        },
+        {
+          "name": "Pearl Mylar",
+          "type": "tinsel",
+          "color": "pearl",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Flashabou or Crystal Flash"
+        },
+        {
+          "name": "Tan Craft Fur",
+          "type": "synthetic",
+          "color": "tan",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Any synthetic fiber"
+        },
+        {
+          "name": "Pink Crystal Flash",
+          "type": "flash",
+          "color": "pink",
+          "required": true,
+          "substitutable": true
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=zVdSBLQtYzw",
+          "title": "Gotcha - Fly Fish Food"
+        }
+      ]
+    },
+    {
+      "id": "crazy-charlie",
+      "name": "Crazy Charlie",
+      "category": "saltwater",
+      "sizes": [2, 4, 6, 8],
+      "target_species": ["bonefish", "permit"],
+      "difficulty": "beginner",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "clear or white",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Bonefish Hook",
+          "type": "hook",
+          "sizes": [2, 4, 6, 8],
+          "brands": ["Gamakatsu SL11-3H", "Mustad 34007"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Bead Chain Eyes",
+          "type": "eyes",
+          "sizes": ["small", "medium"],
+          "color": "silver",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Pearl Mylar",
+          "type": "tinsel",
+          "color": "pearl",
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Calf Tail",
+          "type": "hair",
+          "color": "white, tan, or pink",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Bucktail or craft fur"
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=UsdFcL1VZXA",
+          "title": "Crazy Charlie - Fly Fish Food"
+        }
+      ]
+    },
+    {
+      "id": "seaducer",
+      "name": "Sea-Ducer",
+      "category": "saltwater",
+      "sizes": ["2/0", "1/0", 1, 2, 4],
+      "target_species": ["redfish", "snook", "striped_bass", "saltwater"],
+      "difficulty": "beginner",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "red",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Saltwater Hook",
+          "type": "hook",
+          "sizes": ["2/0", "1/0", 1, 2, 4],
+          "brands": ["Gamakatsu SL11-3H", "Owner SSW"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Saddle Hackles",
+          "type": "feather",
+          "color": "red, yellow, and grizzly",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Various color combos work"
+        },
+        {
+          "name": "Silver Tinsel",
+          "type": "tinsel",
+          "color": "silver",
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Bucktail",
+          "type": "hair",
+          "color": "red and white",
+          "required": true,
+          "substitutable": true
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=uNgjJX-_HnQ",
+          "title": "Sea-Ducer - Thundermist Lure Company"
+        }
+      ]
+    },
+    {
+      "id": "popovic-surf-candy",
+      "name": "Popovic's Surf Candy",
+      "category": "saltwater",
+      "sizes": ["1/0", 1, 2, 4],
+      "target_species": ["striped_bass", "bluefish", "saltwater"],
+      "difficulty": "advanced",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "white",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Saltwater Hook",
+          "type": "hook",
+          "sizes": ["1/0", 1, 2, 4],
+          "brands": ["Gamakatsu SL11-3H", "Mustad 34011"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Ultra Hair",
+          "type": "synthetic",
+          "color": "white and blue (or other)",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Slinky Fiber or SF Blend"
+        },
+        {
+          "name": "Flash",
+          "type": "flash",
+          "color": "pearl or holographic",
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "3D Eyes",
+          "type": "eyes",
+          "sizes": ["small", "medium"],
+          "color": "yellow",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Epoxy",
+          "type": "finish",
+          "color": "clear",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "UV resin"
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=O-gsfNEV_sU",
+          "title": "Surf Candy - Fly Tying Nation"
+        }
+      ]
+    },
+    {
+      "id": "gurgler",
+      "name": "Gurgler",
+      "category": "topwater",
+      "sizes": [2, 4, 6, 8],
+      "target_species": ["bass", "pike", "saltwater"],
+      "difficulty": "intermediate",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "white or chartreuse",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Popper Hook",
+          "type": "hook",
+          "sizes": [2, 4, 6, 8],
+          "brands": ["Gamakatsu SL11-3H", "Mustad 91715"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Foam",
+          "type": "foam",
+          "color": "white, chartreuse, or other",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Marabou or Bucktail",
+          "type": "feather",
+          "color": "white, chartreuse, or other",
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Flash",
+          "type": "flash",
+          "color": "matching",
+          "required": false,
+          "substitutable": true
+        },
+        {
+          "name": "Rubber Legs",
+          "type": "synthetic",
+          "color": "matching",
+          "required": false,
+          "substitutable": true
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=N0hWZh5HWmY",
+          "title": "Gurgler - Fly Fish Food"
+        }
+      ]
+    },
+    {
+      "id": "articulated-game-changer",
+      "name": "Articulated Game Changer",
+      "category": "streamer",
+      "sizes": [1, 2, 4],
+      "target_species": ["pike", "muskie", "bass", "trout"],
+      "difficulty": "advanced",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "white or tan",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Articulated Hook Shank",
+          "type": "shank",
+          "sizes": ["25mm", "35mm", "55mm"],
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Streamer Hook",
+          "type": "hook",
+          "sizes": [1, 2, 4],
+          "brands": ["Gamakatsu B10S", "Ahrex PR350"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Fish-Skull",
+          "type": "head",
+          "sizes": ["small", "medium", "large"],
+          "color": "various",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Synthetic Hair",
+          "type": "synthetic",
+          "color": "various combinations",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Craft fur or EP Fibers"
+        },
+        {
+          "name": "Flash",
+          "type": "flash",
+          "color": "matching",
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Razor Blade",
+          "type": "tool",
+          "required": true,
+          "substitutable": false
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=WN_bHG8x9M0",
+          "title": "Game Changer - Blane Chocklett"
+        }
+      ]
+    },
+    {
+      "id": "wiggle-minnow",
+      "name": "Wiggle Minnow",
+      "category": "streamer",
+      "sizes": [2, 4, 6],
+      "target_species": ["bass", "trout", "pike"],
+      "difficulty": "advanced",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "white",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Articulated Hook Shank",
+          "type": "shank",
+          "sizes": ["25mm", "35mm"],
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Streamer Hook",
+          "type": "hook",
+          "sizes": [2, 4, 6],
+          "brands": ["Gamakatsu B10S"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Rabbit Strips",
+          "type": "fur",
+          "color": "natural or dyed",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Flash",
+          "type": "flash",
+          "color": "matching",
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Dumbbell Eyes",
+          "type": "eyes",
+          "sizes": ["small", "medium"],
+          "required": true,
+          "substitutable": true
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=eNxY5r1FwWE",
+          "title": "Articulated Wiggle Minnow - Kelly Galloup"
+        }
+      ]
+    },
+    {
+      "id": "kreelex",
+      "name": "Kreelex",
+      "category": "streamer",
+      "sizes": [2, 4, 6, 8],
+      "target_species": ["bass", "pike", "saltwater"],
+      "difficulty": "beginner",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "white or chartreuse",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Streamer Hook",
+          "type": "hook",
+          "sizes": [2, 4, 6, 8],
+          "brands": ["Gamakatsu SL11-3H", "Mustad 34007"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Krystal Flash",
+          "type": "flash",
+          "color": "pearl, chartreuse, or other",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "3D Eyes",
+          "type": "eyes",
+          "sizes": ["small", "medium"],
+          "color": "yellow",
+          "required": false,
+          "substitutable": true
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=vdO3XYJLxpw",
+          "title": "Kreelex - McFly Angler"
+        }
+      ]
+    },
+    {
+      "id": "squirmy-wormy",
+      "name": "Squirmy Wormy",
+      "category": "nymph",
+      "sizes": [10, 12, 14, 16],
+      "target_species": ["trout"],
+      "difficulty": "beginner",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "red or pink",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Nymph Hook",
+          "type": "hook",
+          "sizes": [10, 12, 14, 16],
+          "brands": ["Tiemco 2457", "Umpqua U202"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Squirmy Worm Material",
+          "type": "synthetic",
+          "color": "red, pink, or tan",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Bead Head",
+          "type": "bead",
+          "sizes": ["2.5mm", "3mm"],
+          "color": "gold or copper",
+          "required": false,
+          "substitutable": true
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=KxJKMB5XzN4",
+          "title": "Squirmy Wormy - Fly Fish Food"
+        }
+      ]
+    },
+    {
+      "id": "perdigon",
+      "name": "Perdigon",
+      "category": "nymph",
+      "sizes": [14, 16, 18, 20],
+      "target_species": ["trout"],
+      "difficulty": "intermediate",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "fluorescent green or pink",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Jig Hook",
+          "type": "hook",
+          "sizes": [14, 16, 18, 20],
+          "brands": ["Hanak H450BL", "Firehole 633"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Slotted Tungsten Bead",
+          "type": "bead",
+          "sizes": ["2mm", "2.5mm", "3mm"],
+          "color": "black, copper, or gold",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Pheasant Tail or Coq de Leon",
+          "type": "feather",
+          "color": "natural",
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Holographic Tinsel",
+          "type": "tinsel",
+          "color": "various",
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "UV Resin",
+          "type": "finish",
+          "color": "clear",
+          "required": true,
+          "substitutable": false
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=QHPj5_85F84",
+          "title": "Perdigon Nymph - Fly Fish Food"
+        }
+      ]
+    },
+    {
+      "id": "frenchie",
+      "name": "Frenchie",
+      "category": "nymph",
+      "sizes": [14, 16, 18, 20],
+      "target_species": ["trout"],
+      "difficulty": "beginner",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "hot orange or pink",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Jig Hook",
+          "type": "hook",
+          "sizes": [14, 16, 18, 20],
+          "brands": ["Hanak H450BL", "Firehole 633"],
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Standard nymph hook works"
+        },
+        {
+          "name": "Slotted Tungsten Bead",
+          "type": "bead",
+          "sizes": ["2mm", "2.5mm", "3mm"],
+          "color": "gold or copper",
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Pheasant Tail Fibers",
+          "type": "feather",
+          "color": "natural brown",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Copper Wire",
+          "type": "wire",
+          "color": "copper",
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Coq de Leon Fibers",
+          "type": "feather",
+          "color": "natural",
+          "required": false,
+          "substitutable": true,
+          "substitute_note": "Pheasant tail works"
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=C9bnBBXVE5E",
+          "title": "Frenchie Nymph - Tightline Productions"
+        }
+      ]
+    },
+    {
+      "id": "walt-worm",
+      "name": "Walt's Worm",
+      "category": "nymph",
+      "sizes": [12, 14, 16, 18],
+      "target_species": ["trout"],
+      "difficulty": "beginner",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "tan or brown",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Nymph Hook",
+          "type": "hook",
+          "sizes": [12, 14, 16, 18],
+          "brands": ["Tiemco 3761", "Umpqua U203"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Rabbit Dubbing",
+          "type": "dubbing",
+          "color": "tan or brown",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Any spiky dubbing"
+        },
+        {
+          "name": "Pheasant Tail Fibers",
+          "type": "feather",
+          "color": "natural",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Fine Wire",
+          "type": "wire",
+          "color": "copper or gold",
+          "required": true,
+          "substitutable": true
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=FN5YrbAhxk0",
+          "title": "Walt's Worm - Fly Fish Food"
+        }
+      ]
+    },
+    {
+      "id": "zonker",
+      "name": "Zonker",
+      "category": "streamer",
+      "sizes": [2, 4, 6, 8],
+      "target_species": ["trout", "bass", "pike"],
+      "difficulty": "intermediate",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "black or olive",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Streamer Hook",
+          "type": "hook",
+          "sizes": [2, 4, 6, 8],
+          "brands": ["Tiemco 300", "Mustad 79580"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Rabbit Strip",
+          "type": "fur",
+          "color": "natural, black, or olive",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Silver Mylar",
+          "type": "tinsel",
+          "color": "silver",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Any flat tinsel"
+        },
+        {
+          "name": "Grizzly Hackle",
+          "type": "feather",
+          "color": "grizzly",
+          "required": false,
+          "substitutable": true
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=R9XMOE3L6ws",
+          "title": "Zonker - Fly Fish Food"
+        }
+      ]
+    },
+    {
+      "id": "sex-dungeon",
+      "name": "Sex Dungeon",
+      "category": "streamer",
+      "sizes": [2, 4, 6],
+      "target_species": ["trout", "bass"],
+      "difficulty": "intermediate",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "black",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Streamer Hook",
+          "type": "hook",
+          "sizes": [2, 4, 6],
+          "brands": ["Gamakatsu B10S", "Ahrex PR350"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Rabbit Strips",
+          "type": "fur",
+          "color": "black, olive, chartreuse",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Marabou",
+          "type": "feather",
+          "color": "matching",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Schlappen",
+          "type": "feather",
+          "color": "matching",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "More marabou works"
+        },
+        {
+          "name": "Flash",
+          "type": "flash",
+          "color": "matching",
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Dumbbell Eyes",
+          "type": "eyes",
+          "sizes": ["medium", "large"],
+          "required": true,
+          "substitutable": false
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=lM7R8sHmRAk",
+          "title": "Sex Dungeon - Fly Fish Food"
+        }
+      ]
+    },
+    {
+      "id": "double-bunny",
+      "name": "Double Bunny",
+      "category": "streamer",
+      "sizes": [1, 2, 4, 6],
+      "target_species": ["pike", "muskie", "bass"],
+      "difficulty": "intermediate",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "black",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Tandem Hook Rig",
+          "type": "hook",
+          "sizes": [1, 2, 4, 6],
+          "brands": ["Gamakatsu B10S"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Rabbit Strips",
+          "type": "fur",
+          "color": "black and various",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Lead Wire",
+          "type": "wire",
+          "color": "lead",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Non-toxic wire"
+        },
+        {
+          "name": "Flash",
+          "type": "flash",
+          "color": "matching",
+          "required": false,
+          "substitutable": true
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=nUm8Ue9XQXE",
+          "title": "Double Bunny - Fly Tying Tutorials"
+        }
+      ]
+    },
+    {
+      "id": "dahlberg-diver",
+      "name": "Dahlberg Diver",
+      "category": "topwater",
+      "sizes": ["1/0", 1, 2, 4],
+      "target_species": ["bass", "pike"],
+      "difficulty": "advanced",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "black or olive",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Stinger Hook",
+          "type": "hook",
+          "sizes": ["1/0", 1, 2, 4],
+          "brands": ["Gamakatsu SL11-3H", "Mustad 91715"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Deer Hair",
+          "type": "hair",
+          "color": "natural",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Rabbit Strips",
+          "type": "fur",
+          "color": "olive, black, or brown",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Marabou works"
+        },
+        {
+          "name": "Saddle Hackles",
+          "type": "feather",
+          "color": "grizzly or matching",
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Flash",
+          "type": "flash",
+          "color": "matching",
+          "required": false,
+          "substitutable": true
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=7IFuXF6kGbQ",
+          "title": "Dahlberg Diver - Fly Fish Food"
+        }
+      ]
+    },
+    {
+      "id": "bass-popper",
+      "name": "Bass Popper",
+      "category": "topwater",
+      "sizes": [2, 4, 6, 8],
+      "target_species": ["bass", "panfish"],
+      "difficulty": "beginner",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "black or white",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Popper Hook",
+          "type": "hook",
+          "sizes": [2, 4, 6, 8],
+          "brands": ["Gamakatsu SL11-3H", "Mustad 91715"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Foam Popper Body",
+          "type": "body",
+          "sizes": ["small", "medium", "large"],
+          "color": "various",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Rubber Legs",
+          "type": "synthetic",
+          "color": "various",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Marabou or Bucktail",
+          "type": "feather",
+          "color": "matching",
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Flash",
+          "type": "flash",
+          "color": "matching",
+          "required": false,
+          "substitutable": true
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=KKb9kSjLLPU",
+          "title": "Foam Bass Popper - Orvis"
+        }
+      ]
+    },
+    {
+      "id": "deceiver-bunny",
+      "name": "Deceiver-Bunny Hybrid",
+      "category": "saltwater",
+      "sizes": ["2/0", "1/0", 1, 2],
+      "target_species": ["striped_bass", "redfish", "saltwater"],
+      "difficulty": "intermediate",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "white",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Saltwater Hook",
+          "type": "hook",
+          "sizes": ["2/0", "1/0", 1, 2],
+          "brands": ["Gamakatsu SL11-3H", "Owner SSW"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Rabbit Strip",
+          "type": "fur",
+          "color": "white, chartreuse, or other",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Saddle Hackles",
+          "type": "feather",
+          "color": "matching",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Bucktail",
+          "type": "hair",
+          "color": "white",
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Flash",
+          "type": "flash",
+          "color": "pearl or silver",
+          "required": true,
+          "substitutable": true
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=D3kzLdmg8w4",
+          "title": "Bunny Deceiver - Fly Fish Food"
+        }
+      ]
+    },
+    {
+      "id": "crab-pattern",
+      "name": "Merkin Crab",
+      "category": "saltwater",
+      "sizes": [2, 4, 6],
+      "target_species": ["permit", "redfish", "bonefish"],
+      "difficulty": "advanced",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "tan",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Permit Hook",
+          "type": "hook",
+          "sizes": [2, 4, 6],
+          "brands": ["Gamakatsu SL11-3H", "Mustad 34007"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "EP Craft Fur",
+          "type": "synthetic",
+          "color": "tan or olive",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Regular craft fur"
+        },
+        {
+          "name": "Rubber Legs",
+          "type": "synthetic",
+          "color": "tan or olive",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Lead Eyes or Bead Chain",
+          "type": "eyes",
+          "sizes": ["small", "medium"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Dubbing",
+          "type": "dubbing",
+          "color": "tan",
+          "required": true,
+          "substitutable": true
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=9vQNXfP3Wss",
+          "title": "Merkin Crab - Fly Fish Food"
+        }
+      ]
+    },
+    {
+      "id": "shrimp-pattern",
+      "name": "EP Shrimp",
+      "category": "saltwater",
+      "sizes": [2, 4, 6, 8],
+      "target_species": ["redfish", "bonefish", "snook"],
+      "difficulty": "intermediate",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "tan or pink",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Saltwater Hook",
+          "type": "hook",
+          "sizes": [2, 4, 6, 8],
+          "brands": ["Gamakatsu SL11-3H", "Mustad 34007"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "EP Fibers",
+          "type": "synthetic",
+          "color": "tan, pink, or olive",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Craft fur or synthetic dubbing"
+        },
+        {
+          "name": "Bead Chain Eyes",
+          "type": "eyes",
+          "sizes": ["small"],
+          "color": "black",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Mono Eyes",
+          "type": "eyes",
+          "sizes": ["small"],
+          "color": "clear",
+          "required": false,
+          "substitutable": true
+        },
+        {
+          "name": "Shrimp/Scud Dubbing",
+          "type": "dubbing",
+          "color": "matching",
+          "required": true,
+          "substitutable": true
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=gv8TQ8z9Umo",
+          "title": "EP Shrimp - Enrico Puglisi"
+        }
+      ]
+    },
+    {
+      "id": "clawdad",
+      "name": "Clawdad",
+      "category": "freshwater",
+      "sizes": [2, 4, 6, 8],
+      "target_species": ["bass", "carp"],
+      "difficulty": "intermediate",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "brown or tan",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Nymph/Streamer Hook",
+          "type": "hook",
+          "sizes": [2, 4, 6, 8],
+          "brands": ["Gamakatsu SL11-3H", "Tiemco 5263"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Barred Rabbit Strips",
+          "type": "fur",
+          "color": "tan/brown",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Regular rabbit"
+        },
+        {
+          "name": "Marabou",
+          "type": "feather",
+          "color": "brown",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Cactus Chenille or Dubbing",
+          "type": "body_material",
+          "color": "brown or tan",
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Lead Eyes",
+          "type": "eyes",
+          "sizes": ["small", "medium"],
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Dumbbell eyes"
+        },
+        {
+          "name": "Rubber Legs",
+          "type": "synthetic",
+          "color": "brown",
+          "required": false,
+          "substitutable": true
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=oHlIWxIXEU4",
+          "title": "Clawdad - Fly Tying Videos"
+        }
+      ]
+    },
+    {
+      "id": "carp-crack",
+      "name": "Carp Crack",
+      "category": "freshwater",
+      "sizes": [6, 8, 10],
+      "target_species": ["carp"],
+      "difficulty": "beginner",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "tan or olive",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Nymph Hook",
+          "type": "hook",
+          "sizes": [6, 8, 10],
+          "brands": ["Tiemco 2457", "Umpqua U202"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Bead Chain Eyes",
+          "type": "eyes",
+          "sizes": ["small", "medium"],
+          "color": "black or nickel",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Marabou",
+          "type": "feather",
+          "color": "tan, olive, or brown",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Rabbit or craft fur"
+        },
+        {
+          "name": "Sparkle Dubbing",
+          "type": "dubbing",
+          "color": "matching",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Any dubbing with flash"
+        },
+        {
+          "name": "Hackle",
+          "type": "feather",
+          "color": "brown or grizzly",
+          "required": false,
+          "substitutable": true
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=FYT2V2V3Rnc",
+          "title": "Carp Crack - Fly Fish Food"
+        }
+      ]
+    },
+    {
+      "id": "pats-rubber-legs",
+      "name": "Pat's Rubber Legs",
+      "category": "nymph",
+      "sizes": [4, 6, 8, 10],
+      "target_species": ["trout"],
+      "difficulty": "intermediate",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "black or brown",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Nymph/Streamer Hook",
+          "type": "hook",
+          "sizes": [4, 6, 8, 10],
+          "brands": ["Tiemco 5263", "Umpqua U203"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Rubber Legs",
+          "type": "synthetic",
+          "color": "black, brown, or white",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Chenille",
+          "type": "body_material",
+          "color": "black or brown",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Dubbing works"
+        },
+        {
+          "name": "Hackle",
+          "type": "feather",
+          "color": "brown",
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Bead Head",
+          "type": "bead",
+          "sizes": ["3mm", "3.5mm", "4mm"],
+          "color": "gold or copper",
+          "required": false,
+          "substitutable": true
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=gKY7kIXLFDI",
+          "title": "Pat's Rubber Legs - Fly Fish Food"
+        }
+      ]
+    },
+    {
+      "id": "ants",
+      "name": "Foam Ant",
+      "category": "terrestrial",
+      "sizes": [12, 14, 16, 18],
+      "target_species": ["trout", "panfish"],
+      "difficulty": "beginner",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "black",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Dry Fly Hook",
+          "type": "hook",
+          "sizes": [12, 14, 16, 18],
+          "brands": ["Tiemco 100", "Umpqua U200"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Foam",
+          "type": "foam",
+          "color": "black",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Hackle",
+          "type": "feather",
+          "color": "black or brown",
+          "required": true,
+          "substitutable": true
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=TwrBvohg1Ck",
+          "title": "Foam Ant - Tightline Productions"
+        }
+      ]
+    },
+    {
+      "id": "beetles",
+      "name": "Foam Beetle",
+      "category": "terrestrial",
+      "sizes": [10, 12, 14, 16],
+      "target_species": ["trout", "panfish"],
+      "difficulty": "beginner",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "black",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Dry Fly Hook",
+          "type": "hook",
+          "sizes": [10, 12, 14, 16],
+          "brands": ["Tiemco 100", "Umpqua U200"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Foam",
+          "type": "foam",
+          "color": "black",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Peacock Herl",
+          "type": "herl",
+          "color": "natural",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Black dubbing works"
+        },
+        {
+          "name": "Hackle",
+          "type": "feather",
+          "color": "black",
+          "required": false,
+          "substitutable": true
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=Wz5OXVF8bXo",
+          "title": "Foam Beetle - Fly Fish Food"
+        }
+      ]
+    },
+    {
+      "id": "hopper",
+      "name": "Dave's Hopper",
+      "category": "terrestrial",
+      "sizes": [6, 8, 10, 12],
+      "target_species": ["trout"],
+      "difficulty": "advanced",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "yellow",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Dry Fly Hook",
+          "type": "hook",
+          "sizes": [6, 8, 10, 12],
+          "brands": ["Tiemco 200R", "Umpqua U201"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Deer Hair",
+          "type": "hair",
+          "color": "natural tan",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Yellow Yarn",
+          "type": "synthetic",
+          "color": "yellow",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Dubbing or foam"
+        },
+        {
+          "name": "Turkey Quill",
+          "type": "feather",
+          "color": "mottled",
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Hackle",
+          "type": "feather",
+          "color": "brown or grizzly",
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Rubber Legs",
+          "type": "synthetic",
+          "color": "yellow",
+          "required": true,
+          "substitutable": false
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=l1RiBOaBtg0",
+          "title": "Dave's Hopper - Fly Fish Food"
+        }
+      ]
+    },
+    {
+      "id": "blue-winged-olive",
+      "name": "Blue Winged Olive (BWO)",
+      "category": "dry_fly",
+      "sizes": [16, 18, 20, 22],
+      "target_species": ["trout"],
+      "difficulty": "intermediate",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "olive",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Dry Fly Hook",
+          "type": "hook",
+          "sizes": [16, 18, 20, 22],
+          "brands": ["Tiemco 100", "Umpqua U200"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Dun Hackle Tips",
+          "type": "feather",
+          "color": "dun gray",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Hen saddle or microfibbets"
+        },
+        {
+          "name": "Olive Dubbing",
+          "type": "dubbing",
+          "color": "olive",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Dun Hackle",
+          "type": "feather",
+          "color": "dun gray",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Dun CDC",
+          "type": "feather",
+          "color": "dun gray",
+          "required": false,
+          "substitutable": true,
+          "substitute_note": "For CDC version"
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=nHq7Y8Q9tBg",
+          "title": "BWO Dry Fly - Tightline Productions"
+        }
+      ]
+    },
+    {
+      "id": "pmx",
+      "name": "PMX",
+      "category": "dry_fly",
+      "sizes": [8, 10, 12, 14],
+      "target_species": ["trout"],
+      "difficulty": "advanced",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "tan or brown",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Dry Fly Hook",
+          "type": "hook",
+          "sizes": [8, 10, 12, 14],
+          "brands": ["Tiemco 200R", "Umpqua U201"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Elk Hair",
+          "type": "hair",
+          "color": "natural tan",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Dubbing",
+          "type": "dubbing",
+          "color": "tan or yellow",
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Hackle",
+          "type": "feather",
+          "color": "brown or grizzly",
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Rubber Legs",
+          "type": "synthetic",
+          "color": "yellow or tan",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Moose Mane",
+          "type": "hair",
+          "color": "natural dark",
+          "required": false,
+          "substitutable": true,
+          "substitute_note": "For tail"
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=SZm2F1eZQVE",
+          "title": "PMX - Fly Fish Food"
+        }
+      ]
+    },
+    {
+      "id": "caddis-emerger",
+      "name": "Caddis Emerger",
+      "category": "emerger",
+      "sizes": [14, 16, 18],
+      "target_species": ["trout"],
+      "difficulty": "intermediate",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "olive or tan",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Emerger Hook",
+          "type": "hook",
+          "sizes": [14, 16, 18],
+          "brands": ["Tiemco 2457", "Umpqua U202"],
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Curved nymph hook"
+        },
+        {
+          "name": "Antron Shuck",
+          "type": "synthetic",
+          "color": "tan or amber",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Z-lon works"
+        },
+        {
+          "name": "Dubbing",
+          "type": "dubbing",
+          "color": "olive or tan",
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Partridge Feather",
+          "type": "feather",
+          "color": "natural brown",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Soft hackle"
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=QNOxN8rVbqU",
+          "title": "Caddis Emerger - Fly Fish Food"
+        }
+      ]
+    },
+    {
+      "id": "rs2",
+      "name": "RS2",
+      "category": "emerger",
+      "sizes": [18, 20, 22, 24],
+      "target_species": ["trout"],
+      "difficulty": "intermediate",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "gray or olive",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Emerger Hook",
+          "type": "hook",
+          "sizes": [18, 20, 22, 24],
+          "brands": ["Tiemco 101", "Umpqua U200"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Microfibetts",
+          "type": "synthetic",
+          "color": "gray or dun",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Mayfly tails"
+        },
+        {
+          "name": "Muskrat Dubbing",
+          "type": "dubbing",
+          "color": "gray",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Any gray dubbing"
+        },
+        {
+          "name": "CDC",
+          "type": "feather",
+          "color": "natural gray",
+          "required": true,
+          "substitutable": false
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=RqEqI9Pxvsk",
+          "title": "RS2 - Tightline Productions"
+        }
+      ]
+    },
+    {
+      "id": "klinkhammer",
+      "name": "Klinkhammer",
+      "category": "emerger",
+      "sizes": [12, 14, 16, 18],
+      "target_species": ["trout", "grayling"],
+      "difficulty": "advanced",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "tan or olive",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Klinkhammer Hook",
+          "type": "hook",
+          "sizes": [12, 14, 16, 18],
+          "brands": ["Tiemco 206BL", "Partridge GRS12ST"],
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Para-Post",
+          "type": "synthetic",
+          "color": "white or hi-vis",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Poly yarn"
+        },
+        {
+          "name": "Dubbing",
+          "type": "dubbing",
+          "color": "olive, tan, or brown",
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Hackle",
+          "type": "feather",
+          "color": "brown or grizzly",
+          "required": true,
+          "substitutable": true
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=wN4H9e7Y3Ck",
+          "title": "Klinkhammer Special - Davie McPhail"
+        }
+      ]
+    },
+    {
+      "id": "mop-fly",
+      "name": "Mop Fly",
+      "category": "nymph",
+      "sizes": [10, 12, 14, 16],
+      "target_species": ["trout"],
+      "difficulty": "beginner",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "yellow or chartreuse",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Jig Hook",
+          "type": "hook",
+          "sizes": [10, 12, 14, 16],
+          "brands": ["Hanak H450BL", "Firehole 633"],
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "Regular nymph hook"
+        },
+        {
+          "name": "Slotted Tungsten Bead",
+          "type": "bead",
+          "sizes": ["2.5mm", "3mm", "3.5mm"],
+          "color": "black, copper, or gold",
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Mop Chenille",
+          "type": "chenille",
+          "color": "chartreuse, cream, or pink",
+          "required": true,
+          "substitutable": false
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=qQXzwkVnBBQ",
+          "title": "Mop Fly - Fly Fish Food"
+        }
+      ]
+    },
+    {
+      "id": "egg-fly",
+      "name": "Glo Bug (Egg Fly)",
+      "category": "egg",
+      "sizes": [8, 10, 12, 14],
+      "target_species": ["trout", "steelhead", "salmon"],
+      "difficulty": "beginner",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "orange or pink",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Egg/Nymph Hook",
+          "type": "hook",
+          "sizes": [8, 10, 12, 14],
+          "brands": ["Tiemco 2457", "Umpqua U202"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Glo Bug Yarn",
+          "type": "synthetic",
+          "color": "orange, pink, chartreuse, or peach",
+          "required": true,
+          "substitutable": false
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=UqQX3cY3gaU",
+          "title": "Glo Bug Egg - Tightline Productions"
+        }
+      ]
+    },
+    {
+      "id": "intruder",
+      "name": "Intruder",
+      "category": "steelhead",
+      "sizes": ["large articulated"],
+      "target_species": ["steelhead", "salmon"],
+      "difficulty": "advanced",
+      "materials": [
+        {
+          "name": "Thread",
+          "type": "thread",
+          "color": "black or red",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Intruder Shank",
+          "type": "shank",
+          "sizes": ["25mm", "35mm", "55mm"],
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Trailer Hook",
+          "type": "hook",
+          "sizes": [2, 4],
+          "brands": ["Gamakatsu Octopus", "Owner SSW"],
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Marabou",
+          "type": "feather",
+          "color": "various (black, purple, pink, etc.)",
+          "required": true,
+          "substitutable": false
+        },
+        {
+          "name": "Schlappen",
+          "type": "feather",
+          "color": "matching",
+          "required": true,
+          "substitutable": true,
+          "substitute_note": "More marabou"
+        },
+        {
+          "name": "Flash",
+          "type": "flash",
+          "color": "matching",
+          "required": true,
+          "substitutable": true
+        },
+        {
+          "name": "Dubbing",
+          "type": "dubbing",
+          "color": "matching",
+          "required": true,
+          "substitutable": true
+        }
+      ],
+      "tutorials": [
+        {
+          "type": "video",
+          "url": "https://www.youtube.com/watch?v=Sz1Sk7X8wVw",
+          "title": "Intruder - Ed Ward"
+        }
+      ]
+    }
+  ]
+}
