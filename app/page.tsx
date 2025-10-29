@@ -12,7 +12,7 @@ interface Fly {
   id: string
   source: FlySource
   name: string
-  category: string
+  category: string // stored as non-null string locally (we coerce to '')
   difficulty: string | null
   sizes: (number | string)[] | null
   image_url?: string | null
@@ -51,31 +51,48 @@ export default function Home() {
   async function loadFlies() {
     try {
       setLoading(true)
-      const { data: { user } } = await supabase.auth.getUser()
 
-      const { data: g } = await supabase
+      // Get current auth user (avoid name shadowing with useAuth's `user`)
+      const { data: auth } = await supabase.auth.getUser()
+      const authUser = auth?.user ?? null
+
+      // Global flies (public)
+      const { data: g, error: gErr } = await supabase
         .from('flies')
         .select('id, name, category, difficulty, sizes, image_url')
         .order('name')
         .limit(1000)
 
+      if (gErr) console.error('flies error', gErr)
+
       const globals: Fly[] = (g ?? []).map((r: any) => ({
-        id: r.id, source: 'global', name: r.name,
-        category: r.category, difficulty: r.difficulty,
-        sizes: r.sizes ?? [], image_url: r.image_url ?? null
+        id: r.id,
+        source: 'global',
+        name: r.name,
+        category: r.category ?? '',
+        difficulty: r.difficulty ?? null,
+        sizes: Array.isArray(r.sizes) ? r.sizes : (r.sizes ?? []),
+        image_url: r.image_url ?? null,
       }))
 
+      // User flies (private)
       let mine: Fly[] = []
-      if (user) {
-        const { data: u } = await supabase
+      if (authUser) {
+        const { data: u, error: uErr } = await supabase
           .from('user_flies')
           .select('id, name, category, difficulty, sizes, image_url')
           .order('name')
+
+        if (uErr) console.error('user_flies error', uErr)
+
         mine = (u ?? []).map((r: any) => ({
-          id: r.id, source: 'user' as const, name: r.name,
-          category: r.category, difficulty: r.difficulty ?? null,
+          id: r.id,
+          source: 'user' as const,
+          name: r.name,
+          category: r.category ?? '',
+          difficulty: r.difficulty ?? null,
           sizes: Array.isArray(r.sizes) ? r.sizes : (r.sizes ?? []),
-          image_url: r.image_url ?? null
+          image_url: r.image_url ?? null,
         }))
       }
 
@@ -107,6 +124,10 @@ export default function Home() {
 
         const detail: FlyDetail = {
           ...fly,
+          category: base?.category ?? fly.category ?? '',
+          difficulty: base?.difficulty ?? fly.difficulty ?? null,
+          sizes: Array.isArray(base?.sizes) ? base?.sizes : (base?.sizes ?? fly.sizes ?? []),
+          image_url: base?.image_url ?? fly.image_url ?? null,
           target_species: base?.target_species ?? [],
           colorways: base?.colorways ?? [],
           materials: (fms ?? []).map((r: any) => ({
@@ -141,6 +162,10 @@ export default function Home() {
 
         const detail: FlyDetail = {
           ...fly,
+          category: base?.category ?? fly.category ?? '',
+          difficulty: base?.difficulty ?? fly.difficulty ?? null,
+          sizes: Array.isArray(base?.sizes) ? base?.sizes : (base?.sizes ?? fly.sizes ?? []),
+          image_url: base?.image_url ?? fly.image_url ?? null,
           target_species: base?.target_species ?? [],
           colorways: base?.colorways ?? [],
           materials: mats,
@@ -154,7 +179,11 @@ export default function Home() {
   }
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center"><div className="text-xl">Loading flies...</div></div>
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl">Loading flies...</div>
+      </div>
+    )
   }
 
   return (
@@ -172,24 +201,37 @@ export default function Home() {
             {user ? (
               <>
                 <span className="text-sm text-gray-600">{user.email}</span>
-                <button onClick={() => signOut()} className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
+                <button
+                  onClick={() => signOut()}
+                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                >
                   Sign Out
                 </button>
               </>
             ) : (
               <Link href="/login">
-                <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Sign In</button>
+                <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                  Sign In
+                </button>
               </Link>
             )}
           </div>
         </div>
 
-        {/* Nav */}
-        <div className="mt-2 mb-8 flex gap-2">
-          <Link href="/inventory"><button className="px-3 py-2 text-sm rounded-lg border hover:bg-gray-50">📦 Inventory</button></Link>
-          <Link href="/discover"><button className="px-3 py-2 text-sm rounded-lg border hover:bg-gray-50">🎯 What Can I Tie?</button></Link>
-          <Link href="/unlock"><button className="px-3 py-2 text-sm rounded-lg border hover:bg-gray-50">🔓 Unlock</button></Link>
-          <Link href="/compendium"><button className="px-3 py-2 text-sm rounded-lg border hover:bg-gray-50">📚 Compendium</button></Link>
+        {/* Quick Nav Buttons (keep these for now; top Nav is global) */}
+        <div className="mt-2 mb-8 flex gap-2 flex-wrap">
+          <Link href="/inventory">
+            <button className="px-3 py-2 text-sm rounded-lg border hover:bg-gray-50">📦 Inventory</button>
+          </Link>
+          <Link href="/discover">
+            <button className="px-3 py-2 text-sm rounded-lg border hover:bg-gray-50">🎯 What Can I Tie?</button>
+          </Link>
+          <Link href="/unlock">
+            <button className="px-3 py-2 text-sm rounded-lg border hover:bg-gray-50">🔓 Unlock</button>
+          </Link>
+          <Link href="/compendium">
+            <button className="px-3 py-2 text-sm rounded-lg border hover:bg-gray-50">📚 Compendium</button>
+          </Link>
         </div>
 
         {/* Fly Grid */}
@@ -207,7 +249,7 @@ export default function Home() {
                 </span>
               </div>
               <div className="space-y-1">
-                <p className="text-gray-600 capitalize">📂 {fly.category.replace('_', ' ')}</p>
+                <p className="text-gray-600 capitalize">📂 {(fly.category || '').replace('_', ' ')}</p>
                 <p className="text-sm text-gray-500">🎯 Difficulty: {fly.difficulty ?? '—'}</p>
                 {Array.isArray(fly.sizes) && fly.sizes.length > 0 && (
                   <p className="text-sm text-gray-500">📏 Sizes: {fly.sizes.join(', ')}</p>
@@ -224,14 +266,17 @@ export default function Home() {
           <div className="absolute inset-0 bg-black/40" onClick={() => setSelected(null)} />
           <div className="absolute inset-0 overflow-y-auto">
             <div className="min-h-full flex items-center justify-center p-4">
-              <div className="w-full max-w-3xl max-h-[85vh] overflow-y-auto rounded-xl bg-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
+              <div
+                className="w-full max-w-3xl max-h-[85vh] overflow-y-auto rounded-xl bg-white shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <div className="p-6">
                   <div className="flex items-start justify-between">
                     <h3 className="text-2xl font-bold">{selected.name}</h3>
                     <Button variant="outline" onClick={() => setSelected(null)}>Close</Button>
                   </div>
                   <div className="mt-2 text-sm text-gray-600 capitalize">
-                    Category: {selected.category.replace('_', ' ')}
+                    Category: {(selected.category || '').replace('_', ' ')}
                   </div>
                   {selected.difficulty && (
                     <div className="mt-1">
