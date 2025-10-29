@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { AlertCircle, Plus, Trash2, Upload } from 'lucide-react'
 import { parseFliesCSV } from '@/lib/parseFliesCSV'
-
+import FlyDetailDialog, { FlyDetailData } from '@/components/FlyDetailDialog'
 
 type StrArr = string[] | null | undefined
 
@@ -76,7 +76,6 @@ function arrayify(x: any): string[] {
 }
 
 function toCSVValue(v: string | null | undefined) {
-  // Keep it simple & importer-friendly: avoid quotes/commas; trim spaces.
   return (v ?? '').replace(/[\r\n]+/g, ' ').trim()
 }
 
@@ -107,12 +106,16 @@ export default function CompendiumPage() {
   const [csvFileName, setCsvFileName] = useState<string | null>(null)
   const [dragActive, setDragActive] = useState(false)
 
+  // Dialog state
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [selected, setSelected] = useState<FlyDetailData | null>(null)
+
   useEffect(() => { void loadAll() }, [user])
 
   async function loadAll() {
     setLoading(true)
     try {
-      // Global catalog (read-only)
+      // Global catalog (read-only, public)
       const { data: g, error: ge } = await supabase
         .from('flies')
         .select('id, name, category, difficulty, sizes, image_url, target_species, colorways')
@@ -174,19 +177,68 @@ export default function CompendiumPage() {
     )
   }, [search, myFlies])
 
-  /**
-   * Insert-only (no mismatched ON CONFLICT). We rely on:
-   *  - our pre-check (existingNameSet)
-   *  - the DB's case-insensitive uniqueness (if you added it) to catch races
-   *  - friendly 23505 handling if the DB blocks a duplicate
-   */
-  async function createOrUpdateMyFly(payload: Omit<MyFly, 'id' | 'source'>): Promise<string | null> {
-    if (!user) { alert('Please sign in.'); return null }
+  // ------ Dialog helper: open with materials (user flies only) ------
+  async function openFlyDetail(f: GlobalFly | MyFly) {
+    const tgt = arrayify(f.target_species)
+    const cols = arrayify(f.colorways)
+    const szs = arrayify(f.sizes)
+    let mats: { required: boolean; name: string; color: string | null }[] = []
+
+    if (f.source === 'user' && user) {
+      const { data: ufm, error: mErr } = await supabase
+        .from('user_fly_materials')
+        .select(`
+          required,
+          position,
+          material_name,
+          color,
+          mat:materials!user_fly_materials_material_id_fkey ( name, color )
+        `)
+        .eq('user_fly_id', f.id)
+        .order('position', { ascending: true })
+      if (!mErr) {
+        mats = (ufm ?? []).map((r: any) => ({
+          required: !!r.required,
+          name: r.mat?.name ?? r.material_name ?? 'Unknown',
+          color: r.mat?.color ?? r.color ?? null,
+        }))
+      }
+    }
+
+    const detail: FlyDetailData = {
+      id: f.id,
+      source: f.source,
+      name: f.name,
+      category: f.category,
+      difficulty: f.difficulty,
+      sizes: szs,
+      image_url: f.image_url ?? null,
+      target_species: tgt,
+      colorways: cols,
+      tutorials: [],
+      materials: mats,
+    }
+
+    setSelected(detail)
+    setDialogOpen(true)
+  }
+
+  /** Insert user fly with silent duplicate handling */
+  async function createOrUpdateMyFly(
+    payload: Omit<MyFly, 'id' | 'source'>,
+    opts?: { silent?: boolean }
+  ): Promise<{ status: 'inserted' | 'duplicate' | 'error'; id?: string | null; error?: string }> {
+    const silent = !!opts?.silent
+    if (!user) {
+      if (!silent) alert('Please sign in.')
+      return { status: 'error', id: null, error: 'unauthenticated' }
+    }
 
     const norm = normalizeName(payload.name)
     if (existingNameSet.has(norm)) {
-      alert(`${payload.name} already included in compendium`)
-      return null
+      // duplicate based on our local set
+      if (!silent) alert(`${payload.name} already included in compendium`)
+      return { status: 'duplicate', id: null }
     }
 
     const { data, error } = await supabase
@@ -196,17 +248,18 @@ export default function CompendiumPage() {
       .single()
 
     if (error) {
-      // 23505 = unique violation (e.g., functional/normalized unique index)
-      // @ts-ignore code presence depends on runtime error object
+      // 23505 unique violation → treat as duplicate silently for CSV imports
+      // @ts-ignore
       if (error.code === '23505') {
-        alert(`${payload.name} already included in compendium`)
-        return null
+        if (!silent) alert(`${payload.name} already included in compendium`)
+        return { status: 'duplicate', id: null }
       }
+      if (!silent) alert(`Failed to save fly "${payload.name}": ${error.message || 'Unknown error'}`)
       console.error('user_flies insert failed:', error.message || error, error)
-      alert(`Failed to save fly "${payload.name}": ${error.message || 'Unknown error'}`)
-      return null
+      return { status: 'error', id: null, error: error.message || 'unknown' }
     }
-    return data?.id ?? null
+
+    return { status: 'inserted', id: data?.id ?? null }
   }
 
   function findMaterialIdByName(name?: string, color?: string | null): string | null {
@@ -258,7 +311,7 @@ export default function CompendiumPage() {
     }
   }
 
-  // ------- CSV utility actions (inside component so they capture state) -------
+  // ------- CSV utility actions -------
   async function previewImport() {
     if (!csvText.trim()) { alert('Paste CSV or choose a file first.'); return }
     const rows = parseCSV(csvText)
@@ -293,14 +346,22 @@ export default function CompendiumPage() {
     if (ids.length) {
       const { data: ufm, error: mErr } = await supabase
         .from('user_fly_materials')
-        .select('user_fly_id, required, position, material_name, color, materials( name, color )')
+        .select(`
+          user_fly_id,
+          required,
+          position,
+          material_name,
+          color,
+          mat:materials!user_fly_materials_material_id_fkey ( id, name, color )
+        `)
         .in('user_fly_id', ids)
+
       if (mErr) { alert(`Failed to load materials: ${mErr.message}`); return }
 
       for (const r of (ufm ?? [])) {
         const fid = (r as any).user_fly_id as string
-        const name = (r as any).materials?.name ?? (r as any).material_name ?? 'Unknown'
-        const color = (r as any).materials?.color ?? (r as any).color ?? null
+        const name = (r as any).mat?.name ?? (r as any).material_name ?? 'Unknown'
+        const color = (r as any).mat?.color ?? (r as any).color ?? null
         const required = (r as any).required ?? true
         const position = (r as any).position ?? 0
         ;(matsByFly[fid] ||= []).push({ material_name: name, color, required, position })
@@ -350,7 +411,7 @@ export default function CompendiumPage() {
     a.remove()
   }
 
-  // CSV Import handler — duplicate-aware (Global + My + within-file)
+  // CSV Import handler — duplicate-aware (Global + My + within-file), silent per-row
   async function importCSV() {
     if (!user) { alert('Please sign in.'); return }
     const rows = parseCSV(csvText)
@@ -358,16 +419,14 @@ export default function CompendiumPage() {
 
     const seen = new Set<string>(existingNameSet) // start with everything already in compendium
     const duplicates: string[] = []
+    const failed: { name: string; reason: string }[] = []
     let added = 0
 
     for (const r of rows) {
       const norm = normalizeName(r.name)
-      if (seen.has(norm)) {
-        duplicates.push(r.name)
-        continue
-      }
+      if (seen.has(norm)) { duplicates.push(r.name); continue }
 
-      const flyId = await createOrUpdateMyFly({
+      const res = await createOrUpdateMyFly({
         name: r.name,
         category: r.category,
         difficulty: r.difficulty,
@@ -375,13 +434,18 @@ export default function CompendiumPage() {
         image_url: r.image_url ?? null,
         target_species: r.target_species ?? [],
         colorways: r.colorways ?? [],
-      })
-      if (!flyId) {
-        // createOrUpdate may alert if duplicate; continue gracefully
+      }, { silent: true })
+
+      if (res.status === 'duplicate') {
+        duplicates.push(r.name)
+        continue
+      }
+      if (res.status === 'error' || !res.id) {
+        failed.push({ name: r.name, reason: res.error ?? 'unknown' })
         continue
       }
 
-      await saveUserFlyMaterials(flyId, r.materials ?? [])
+      await saveUserFlyMaterials(res.id, r.materials ?? [])
       seen.add(norm)
       added++
     }
@@ -392,33 +456,28 @@ export default function CompendiumPage() {
 
     const dupPreview = duplicates.slice(0, 10)
     const more = duplicates.length > dupPreview.length ? ` (and ${duplicates.length - dupPreview.length} more)` : ''
-    const msg =
+    const failPreview = failed.slice(0, 5).map(f => `${f.name} — ${f.reason}`).join('\n')
+    alert(
       `Import complete.\nAdded: ${added}\nSkipped duplicates: ${duplicates.length}` +
-      (duplicates.length ? `\nFirst duplicates: ${dupPreview.join(', ')}${more}` : '')
-    alert(msg)
+      (duplicates.length ? `\nFirst duplicates: ${dupPreview.join(', ')}${more}` : '') +
+      (failed.length ? `\nFailed (${failed.length}):\n${failPreview}${failed.length>5?'\n…':''}` : '')
+    )
   }
 
   async function onCreateFly() {
     const trimmedName = (newFly.name ?? '').trim()
     if (!trimmedName) { alert('Name is required'); return }
 
-    const norm = normalizeName(trimmedName)
-    if (existingNameSet.has(norm)) {
-      alert(`${trimmedName} already included in compendium`)
-      return
-    }
-
-    const payload = {
+    const res = await createOrUpdateMyFly({
       ...newFly,
       name: trimmedName,
       sizes: arrayify(sizesInput),
       target_species: arrayify(speciesInput),
       colorways: arrayify(colorwaysInput),
-    }
+    }, { silent: false })
 
-    const flyId = await createOrUpdateMyFly(payload)
-    if (!flyId) return
-    await saveUserFlyMaterials(flyId, newMats)
+    if (res.status !== 'inserted' || !res.id) return
+    await saveUserFlyMaterials(res.id, newMats)
 
     setNewFly({ name: '', category: 'trout', difficulty: null, sizes: [], image_url: null, target_species: [], colorways: [] })
     setSizesInput('')
@@ -457,24 +516,17 @@ export default function CompendiumPage() {
   }
 
   function onDragOver(e: React.DragEvent<HTMLDivElement>) {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = 'copy'
-    setDragActive(true)
+    e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; setDragActive(true)
   }
   function onDragEnter(e: React.DragEvent<HTMLDivElement>) {
-    e.preventDefault()
-    setDragActive(true)
+    e.preventDefault(); setDragActive(true)
   }
   function onDragLeave(e: React.DragEvent<HTMLDivElement>) {
-    e.preventDefault()
-    setDragActive(false)
+    e.preventDefault(); setDragActive(false)
   }
   function onDrop(e: React.DragEvent<HTMLDivElement>) {
-    e.preventDefault()
-    setDragActive(false)
+    e.preventDefault(); setDragActive(false)
     const dt = e.dataTransfer
-
-    // Prefer files
     if (dt.files && dt.files.length > 0) {
       const file = dt.files[0]
       setCsvFileName(file.name)
@@ -484,8 +536,6 @@ export default function CompendiumPage() {
       reader.readAsText(file)
       return
     }
-
-    // Fallback to plain text drops (e.g., dragging selected text)
     const text = dt.getData('text/plain')
     if (text && text.trim().length) {
       setCsvFileName('dropped-text.csv')
@@ -712,14 +762,18 @@ export default function CompendiumPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredMine.map(f => (
-                <Card key={`uf-${f.id}`} className="hover:shadow-lg transition-all">
+                <Card
+                  key={`uf-${f.id}`}
+                  className="hover:shadow-lg transition-all cursor-pointer"
+                  onClick={() => openFlyDetail(f)}
+                >
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <CardTitle className="text-xl">{f.name}</CardTitle>
                       <Badge variant="outline">My Fly</Badge>
                     </div>
                     <div className="text-sm text-gray-500 capitalize">{f.category}</div>
-                    {f.sizes && (f.sizes as any[]).length > 0 && (
+                    {f.sizes && arrayify(f.sizes).length > 0 && (
                       <div className="text-xs text-gray-500">Sizes: {arrayify(f.sizes).join(', ')}</div>
                     )}
                   </CardHeader>
@@ -730,7 +784,7 @@ export default function CompendiumPage() {
                       <div className="w-full h-40 rounded border flex items-center justify-center text-gray-400">No image</div>
                     )}
                     <div className="mt-3 flex justify-end">
-                      <Button variant="destructive" size="sm" onClick={()=>removeMyFly(f.id)}>
+                      <Button variant="destructive" size="sm" onClick={(e)=>{ e.stopPropagation(); removeMyFly(f.id) }}>
                         <Trash2 className="w-4 h-4 mr-1" /> Delete
                       </Button>
                     </div>
@@ -749,14 +803,18 @@ export default function CompendiumPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredGlobal.map(f => (
-                <Card key={`g-${f.id}`} className="hover:shadow-lg transition-all">
+                <Card
+                  key={`g-${f.id}`}
+                  className="hover:shadow-lg transition-all cursor-pointer"
+                  onClick={() => openFlyDetail(f)}
+                >
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <CardTitle className="text-xl">{f.name}</CardTitle>
                       <Badge>Global</Badge>
                     </div>
                     <div className="text-sm text-gray-500 capitalize">{f.category}</div>
-                    {f.sizes && (f.sizes as any[]).length > 0 && (
+                    {f.sizes && arrayify(f.sizes).length > 0 && (
                       <div className="text-xs text-gray-500">Sizes: {arrayify(f.sizes).join(', ')}</div>
                     )}
                   </CardHeader>
@@ -773,7 +831,9 @@ export default function CompendiumPage() {
           )}
         </div>
       </div>
+
+      {/* Detail dialog */}
+      <FlyDetailDialog open={dialogOpen} onOpenChange={setDialogOpen} fly={selected} />
     </div>
   )
 }
-
