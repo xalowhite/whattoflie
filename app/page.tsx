@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from './contexts/AuthContext'
-import { Button } from '@/components/ui/button'
 
 type FlySource = 'global' | 'user'
 
@@ -144,10 +143,13 @@ export default function Home() {
           .select('id, name, category, difficulty, sizes, image_url, target_species, colorways')
           .eq('id', fly.id).single()
 
-        const { data: fms } = await supabase
+        // Be resilient to either user_fly_id or fly_id existing in the schema
+        const { data: fms, error: fmErr } = await supabase
           .from('user_fly_materials')
           .select('required, material_name, color, materials ( name, color )')
-          .eq('fly_id', fly.id)
+          .or(`user_fly_id.eq.${fly.id},fly_id.eq.${fly.id}`)
+
+        if (fmErr) console.error('user_fly_materials error', fmErr)
 
         const { data: tuts } = await supabase
           .from('user_fly_tutorials')
@@ -273,7 +275,12 @@ export default function Home() {
                 <div className="p-6">
                   <div className="flex items-start justify-between">
                     <h3 className="text-2xl font-bold">{selected.name}</h3>
-                    <Button variant="outline" onClick={() => setSelected(null)}>Close</Button>
+                    <button
+                      onClick={() => setSelected(null)}
+                      className="px-3 py-1.5 border rounded-md hover:bg-gray-50"
+                    >
+                      Close
+                    </button>
                   </div>
                   <div className="mt-2 text-sm text-gray-600 capitalize">
                     Category: {(selected.category || '').replace('_', ' ')}
@@ -313,18 +320,28 @@ export default function Home() {
                       ))}
                     </div>
                   </div>
-                  {selected.tutorials.length > 0 && (
+
+                  {/* Tutorials (render links only if they look like URLs) */}
+                  {Array.isArray(selected.tutorials) && selected.tutorials.length > 0 && (
                     <div className="mt-6">
                       <h4 className="font-semibold mb-2">Tutorials</h4>
                       <ul className="list-disc pl-6 space-y-1">
-                        {selected.tutorials.map((t, i) => (
-                          <li key={i} className="text-sm">
-                            <a href={t.url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">
-                              {t.title || t.url}
-                            </a>
-                            {t.tutorial_type ? <span className="text-gray-500"> — {t.tutorial_type}</span> : null}
-                          </li>
-                        ))}
+                        {selected.tutorials.map((t, i) => {
+                          const isHttp = typeof t.url === 'string' && /^https?:\/\//i.test(t.url)
+                          const label = t.title || (isHttp ? t.url : (t.url || ''))
+                          return (
+                            <li key={i} className="text-sm">
+                              {isHttp ? (
+                                <a href={t.url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">
+                                  {label}
+                                </a>
+                              ) : (
+                                <span className="text-gray-800">{label || 'Untitled resource'}</span>
+                              )}
+                              {t.tutorial_type ? <span className="text-gray-500"> — {t.tutorial_type}</span> : null}
+                            </li>
+                          )
+                        })}
                       </ul>
                     </div>
                   )}

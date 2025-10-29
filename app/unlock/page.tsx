@@ -1,274 +1,390 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import Link from 'next/link'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { supabase } from '@/lib/supabase'
-import { useAuth } from '../contexts/AuthContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ShoppingCart, TrendingUp, Plus } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { AlertCircle, Check, Copy, RefreshCw, X } from 'lucide-react'
 
-/* ================= Helpers ================= */
-const UUID_RX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-const isUUID = (s?: string | null) => !!s && UUID_RX.test(String(s))
+type Status = 'unknown' | 'pass' | 'fail' | 'warn'
 
-function sanitizeLabel(s?: string | null) {
-  if (!s) return ''
-  let t = String(s)
-    .replace(/[\r\n]+/g, ' ')
-    .replace(/^[“”"']+|[“”"']+$/g, '')
-    .replace(/\s+/g, ' ')
-    .trim()
-  t = t.replace(/["'”]\s*$/, '').trim()
-  if (t.length > 140) t = t.slice(0, 140).trim() + '…'
-  return t
-}
-
-function shopUrl(label: string) {
-  const q = encodeURIComponent(`fly tying ${label}`)
-  return `https://www.google.com/search?q=${q}`
-}
-
-/* ================ Types ================ */
-type RpcRow = {
-  kind: 'material_leader' | 'fly'
-  fly_id: string | null
-  fly_name: string | null
-  missing_count: number | null
-  missing_group: string // uuid (either material_groups.id OR materials.id)
-  missing_group_name: string | null
-  unlocks: number | null // only for kind='material_leader'
-}
-
-type UnlockCard = {
+type CheckResult = {
   key: string
   label: string
-  flies: string[]
-  unlocks: number
-  materialId?: string | null // set if missing_group is actually a materials.id (enables quick add)
+  status: Status
+  detail?: string
 }
 
+const INITIAL: CheckResult[] = [
+  { key: 'materials_read', label: 'Public read on public.materials', status: 'unknown' },
+  { key: 'groups_read', label: 'Public read on public.material_groups', status: 'unknown' },
+  { key: 'materials_normalized', label: 'Column public.materials.normalized_name exists', status: 'unknown' },
+  { key: 'materials_search_col', label: 'Column public.materials.search (tsvector) exists', status: 'unknown' },
+  { key: 'materials_textsearch', label: 'Full-text search works on materials.search', status: 'unknown' },
+]
+
+const PATCH_SQL = String.raw`-- ===========================
+-- UNLOCK / SEARCH / PUBLIC READ (IDEMPOTENT)
+-- Safe to run multiple times
+-- ===========================
+
+-- Extensions we rely on
+create extension if not exists pgcrypto;
+create extension if not exists pg_trgm;
+create extension if not exists unaccent;
+
+-- ---------- Public read for catalogs ----------
+alter table if exists public.materials enable row level security;
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies
+    where schemaname='public' and tablename='materials' and policyname='read materials'
+  ) then
+    create policy "read materials" on public.materials for select using (true);
+  end if;
+end$$;
+
+alter table if exists public.material_groups enable row level security;
+do $$
+begin
+  if not exists (
+    select 1 from pg_policies
+    where schemaname='public' and tablename='material_groups' and policyname='read material_groups'
+  ) then
+    create policy "read material_groups" on public.material_groups for select using (true);
+  end if;
+end$$;
+
+-- ---------- Columns for search on materials ----------
+do $$
+begin
+  if not exists (
+    select 1 from information_schema.columns
+    where table_schema='public' and table_name='materials' and column_name='normalized_name'
+  ) then
+    alter table public.materials add column normalized_name text;
+  end if;
+end$$;
+
+do $$
+begin
+  if not exists (
+    select 1 from information_schema.columns
+    where table_schema='public' and table_name='materials' and column_name='search'
+  ) then
+    alter table public.materials add column search tsvector;
+  end if;
+end$$;
+
+-- ---------- Trigger to maintain normalized_name + search ----------
+create or replace function public.materials_maintain_search()
+returns trigger
+language plpgsql
+as $$
+begin
+  -- normalize name for trigram search; unaccent if available
+  new.normalized_name := coalesce(lower(unaccent(new.name)), lower(new.name));
+
+  -- simple tsvector combining name + (optional) color if present
+  new.search :=
+    to_tsvector('simple',
+      coalesce(new.name,'') || ' ' ||
+      coalesce(new.color,'')
+    );
+
+  return new;
+end
+$$;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_trigger
+    where tgname = 'materials_search_trg'
+  ) then
+    create trigger materials_search_trg
+    before insert or update on public.materials
+    for each row execute function public.materials_maintain_search();
+  end if;
+end$$;
+
+-- backfill existing rows
+update public.materials
+set name = name;  -- touch rows to fire trigger via UPDATE
+
+-- ---------- Helpful indexes ----------
+create index if not exists materials_search_gin on public.materials using gin (search);
+create index if not exists materials_normalized_trgm on public.materials using gin (normalized_name gin_trgm_ops);
+
+-- ---------- (Optional) same treatment for groups (name-only) ----------
+do $$
+begin
+  if not exists (
+    select 1 from information_schema.columns
+    where table_schema='public' and table_name='material_groups' and column_name='normalized_name'
+  ) then
+    alter table public.material_groups add column normalized_name text;
+  end if;
+end$$;
+
+create or replace function public.material_groups_maintain_normalized()
+returns trigger language plpgsql as $$
+begin
+  new.normalized_name := coalesce(lower(unaccent(new.name)), lower(new.name));
+  return new;
+end $$;
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_trigger
+    where tgname = 'material_groups_norm_trg'
+  ) then
+    create trigger material_groups_norm_trg
+    before insert or update on public.material_groups
+    for each row execute function public.material_groups_maintain_normalized();
+  end if;
+end$$;
+
+update public.material_groups set name = name;
+create index if not exists material_groups_normalized_trgm on public.material_groups using gin (normalized_name gin_trgm_ops);
+`;
+
 export default function UnlocksPage() {
-  const { user } = useAuth()
-  const [rows, setRows] = useState<UnlockCard[]>([])
-  const [loading, setLoading] = useState(true)
-  const [err, setErr] = useState<string | null>(null)
+  const [checks, setChecks] = useState<CheckResult[]>(INITIAL)
+  const [copyOK, setCopyOK] = useState(false)
+  const [running, setRunning] = useState(false)
+
+  const passCount = useMemo(
+    () => checks.filter(c => c.status === 'pass').length,
+    [checks]
+  )
+
+  async function runChecks() {
+    setRunning(true)
+    const results: CheckResult[] = []
+
+    // 1) Public read on materials
+    {
+      const key = 'materials_read'
+      try {
+        const { error } = await supabase.from('materials').select('id').limit(1)
+        if (error) {
+          results.push({ key, label: getLabel(key), status: 'fail', detail: error.message })
+        } else {
+          results.push({ key, label: getLabel(key), status: 'pass' })
+        }
+      } catch (e: any) {
+        results.push({ key, label: getLabel(key), status: 'fail', detail: String(e?.message || e) })
+      }
+    }
+
+    // 2) Public read on material_groups
+    {
+      const key = 'groups_read'
+      try {
+        const { error } = await supabase.from('material_groups').select('id').limit(1)
+        if (error) {
+          results.push({ key, label: getLabel(key), status: 'fail', detail: error.message })
+        } else {
+          results.push({ key, label: getLabel(key), status: 'pass' })
+        }
+      } catch (e: any) {
+        results.push({ key, label: getLabel(key), status: 'fail', detail: String(e?.message || e) })
+      }
+    }
+
+    // 3) materials.normalized_name exists
+    {
+      const key = 'materials_normalized'
+      try {
+        const { error } = await supabase.from('materials').select('normalized_name').limit(1)
+        if (error) {
+          results.push({ key, label: getLabel(key), status: 'fail', detail: error.message })
+        } else {
+          results.push({ key, label: getLabel(key), status: 'pass' })
+        }
+      } catch (e: any) {
+        results.push({ key, label: getLabel(key), status: 'fail', detail: String(e?.message || e) })
+      }
+    }
+
+    // 4) materials.search exists
+    {
+      const key = 'materials_search_col'
+      try {
+        const { error } = await supabase.from('materials').select('search').limit(1)
+        if (error) {
+          results.push({ key, label: getLabel(key), status: 'fail', detail: error.message })
+        } else {
+          results.push({ key, label: getLabel(key), status: 'pass' })
+        }
+      } catch (e: any) {
+        results.push({ key, label: getLabel(key), status: 'fail', detail: String(e?.message || e) })
+      }
+    }
+
+    // 5) text search works on search (tsvector @@ query)
+    {
+      const key = 'materials_textsearch'
+      try {
+        // Try an innocuous query; will fail if column not tsvector or fts ops unavailable
+        const { error } = await supabase
+          .from('materials')
+          .select('id')
+          .textSearch('search', 'fly', { type: 'plain' })
+          .limit(1)
+
+        if (error) {
+          // If the search column exists but isn't tsvector/indexed, we mark warn to differentiate from hard fail
+          const msg = error.message || ''
+          const warnish = /operator|tsvector|fts|function|does not exist/i.test(msg)
+          results.push({
+            key,
+            label: getLabel(key),
+            status: warnish ? 'warn' : 'fail',
+            detail: msg,
+          })
+        } else {
+          results.push({ key, label: getLabel(key), status: 'pass' })
+        }
+      } catch (e: any) {
+        results.push({ key, label: getLabel(key), status: 'fail', detail: String(e?.message || e) })
+      }
+    }
+
+    // merge into state
+    setChecks(prev => prev.map(c => results.find(r => r.key === c.key) ?? c))
+    setRunning(false)
+  }
+
+  function getLabel(key: string) {
+    const found = INITIAL.find(i => i.key === key)
+    return found?.label ?? key
+  }
 
   useEffect(() => {
-    if (user) void load()
-    else setLoading(false)
-  }, [user])
+    // Run once on mount
+    runChecks()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-  async function load() {
-    setLoading(true)
-    setErr(null)
+  async function copySQL() {
     try {
-      const { data: auth } = await supabase.auth.getUser()
-      const uid = auth?.user?.id
-      if (!uid) { setRows([]); return }
-
-      // 1) Get unlock analysis from the DB
-      const { data, error } = await supabase.rpc('rpc_unlocks', { max_missing: 3 })
-      if (error) throw error
-      const rowsRaw = (data ?? []) as RpcRow[]
-
-      // Split leaders and fly rows
-      const leaders = rowsRaw.filter(r => r.kind === 'material_leader')
-      const flyRows = rowsRaw.filter(r => r.kind === 'fly')
-
-      // 2) Build mapping: missing_group -> [fly names]
-      const byGroup: Record<string, string[]> = {}
-      for (const r of flyRows) {
-        if (!r.missing_group) continue
-        const name = r.fly_name ? sanitizeLabel(r.fly_name) : 'Unknown'
-        if (!byGroup[r.missing_group]) byGroup[r.missing_group] = []
-        if (!byGroup[r.missing_group].includes(name)) byGroup[r.missing_group].push(name)
-      }
-
-      // 3) Detect which leader ids are actual MATERIAL ids (vs group ids) to allow quick add
-      const leaderIds = leaders.map(l => l.missing_group).filter(isUUID)
-      const { data: matHit } = leaderIds.length
-        ? await supabase.from('materials').select('id').in('id', leaderIds)
-        : { data: [] as { id: string }[] }
-      const materialIdSet = new Set((matHit ?? []).map(m => m.id))
-
-      // 4) Build UI cards
-      const cards: UnlockCard[] = leaders.map(l => {
-        const label = sanitizeLabel(l.missing_group_name || 'Unknown')
-        const flies = (byGroup[l.missing_group] || []).sort()
-        const materialId = materialIdSet.has(l.missing_group) ? l.missing_group : null
-        return {
-          key: l.missing_group,
-          label,
-          flies,
-          unlocks: l.unlocks ?? flies.length,
-          materialId
-        }
-      })
-
-      // 5) Sort + limit
-      cards.sort((a, b) => b.unlocks - a.unlocks || a.label.localeCompare(b.label))
-      setRows(cards.slice(0, 30))
-    } catch (e: any) {
-      console.error('Unlocks load failed:', e?.message || e)
-      setErr('Failed to calculate unlocks.')
-      setRows([])
-    } finally {
-      setLoading(false)
+      await navigator.clipboard.writeText(PATCH_SQL)
+      setCopyOK(true)
+      setTimeout(() => setCopyOK(false), 1600)
+    } catch {
+      // noop
     }
   }
-
-  async function addToInventory(card: UnlockCard) {
-    if (!card.materialId || !isUUID(card.materialId)) return
-    try {
-      const { data: auth } = await supabase.auth.getUser()
-      const uid = auth?.user?.id
-      if (!uid) return
-      const { error } = await supabase
-        .from('user_inventory')
-        .upsert(
-          { user_id: uid, material_id: card.materialId, quantity: 1, unit: 'pieces' },
-          { onConflict: 'user_id,material_id' }
-        )
-      if (error) throw error
-      await load()
-    } catch (e) {
-      console.error('addToInventory failed', e)
-    }
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-8">
-        <Card className="max-w-md">
-          <CardHeader><CardTitle>Sign In Required</CardTitle></CardHeader>
-          <CardContent>
-            <p className="mb-4">You need to sign in to use this feature.</p>
-            <Link href="/login"><Button>Sign In</Button></Link>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
-
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Calculating unlocks…</div>
-
-  const totalUnlocks = rows.reduce((s, r) => s + r.unlocks, 0)
 
   return (
-    <div className="min-h-screen p-8 bg-gradient-to-b from-orange-50 to-white">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-5xl font-bold mb-2">Material Unlock Analysis 🔓</h1>
-          <p className="text-gray-600">Buy the one item that unlocks the most “1-away” flies.</p>
-        </div>
+    <div className="mx-auto max-w-4xl p-6 space-y-6">
+      <header className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold tracking-tight">Unlocks & Diagnostics</h1>
+        <Button variant="secondary" onClick={runChecks} disabled={running}>
+          <RefreshCw className={`mr-2 h-4 w-4 ${running ? 'animate-spin' : ''}`} />
+          {running ? 'Checking…' : 'Run checks'}
+        </Button>
+      </header>
 
-        <div className="flex flex-wrap gap-4 mb-8">
-          <Link href="/"><Button variant="outline">← Back to Flies</Button></Link>
-          <Link href="/discover"><Button variant="outline">🎯 What Can I Tie?</Button></Link>
-          <Link href="/inventory"><Button variant="outline">📦 Manage Inventory</Button></Link>
-          <Link href="/compendium"><Button variant="outline">📚 Compendium</Button></Link>
-          <Button onClick={load} variant="outline">Refresh</Button>
-        </div>
-
-        {err && (
-          <Card className="mb-6 border-red-300">
-            <CardContent className="pt-6 text-red-700">
-              {err} Try adding some items to your inventory first.
-            </CardContent>
-          </Card>
-        )}
-
-        {rows.length === 0 ? (
-          <Card>
-            <CardContent className="pt-6 text-center py-12">
-              <ShoppingCart className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-              <h3 className="text-xl font-bold mb-2">All Stocked Up!</h3>
-              <p className="text-gray-600 mb-4">No 1-away flies right now. Add a few more materials.</p>
-              <Link href="/inventory"><Button>Add Materials</Button></Link>
-            </CardContent>
-          </Card>
-        ) : (
-          <>
-            {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="text-3xl font-bold text-orange-600">{rows[0]?.unlocks ?? 0}</div>
-                  <div className="text-sm text-gray-600">Most Flies from 1 Material</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="text-3xl font-bold text-blue-600">{totalUnlocks}</div>
-                  <div className="text-sm text-gray-600">Total Unlock Potential</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="text-3xl font-bold text-green-600">{rows.length}</div>
-                  <div className="text-sm text-gray-600">Materials to Consider</div>
-                </CardContent>
-              </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-3">
+            Current status
+            <Badge variant={passCount === 5 ? 'default' : 'secondary'}>
+              {passCount}/5 passing
+            </Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {checks.map((c) => (
+            <div key={c.key} className="flex items-start justify-between rounded-xl border p-3">
+              <div>
+                <div className="font-medium">{c.label}</div>
+                {c.detail && (
+                  <div className="mt-1 text-sm text-muted-foreground whitespace-pre-wrap">
+                    {c.detail}
+                  </div>
+                )}
+              </div>
+              <StatusPill status={c.status} />
             </div>
+          ))}
+          <p className="text-sm text-muted-foreground">
+            If any checks fail, apply the SQL patch below in your Supabase SQL Editor, then re-run.
+          </p>
+        </CardContent>
+      </Card>
 
-            {/* List */}
-            <div className="space-y-4">
-              <h2 className="text-2xl font-bold mb-4">Top Materials to Buy (Ranked by Impact)</h2>
-              {rows.map((r, i) => (
-                <MaterialCard key={r.key} item={r} rank={i + 1} onAdd={() => addToInventory(r)} />
-              ))}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            SQL Patch (idempotent)
+            <div className="flex items-center gap-2">
+              {copyOK ? (
+                <Badge variant="default" className="gap-1">
+                  <Check className="h-3.5 w-3.5" /> Copied
+                </Badge>
+              ) : (
+                <Button size="sm" variant="outline" onClick={copySQL}>
+                  <Copy className="mr-2 h-4 w-4" /> Copy SQL
+                </Button>
+              )}
             </div>
-          </>
-        )}
-      </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <pre className="overflow-x-auto whitespace-pre rounded-xl bg-muted p-4 text-xs leading-relaxed">
+            {PATCH_SQL}
+          </pre>
+          <div className="mt-3 text-sm text-muted-foreground">
+            What it does: enables public read on <code>materials</code> and <code>material_groups</code>, adds
+            <code>normalized_name</code> and a <code>search</code> <em>(tsvector)</em> to <code>materials</code> with
+            triggers, and creates helpful GIN/TRGM indexes.
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            Notes & Tips <AlertCircle className="h-4 w-4" />
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm text-muted-foreground">
+          <ul className="list-disc pl-5 space-y-1">
+            <li>Client checks can’t verify server-side index existence; the patch safely creates them if missing.</li>
+            <li>
+              If your <code>materials</code> table doesn’t have a <code>color</code> column, you can remove it from the
+              trigger body—everything else remains valid.
+            </li>
+            <li>
+              After running the patch, click <em>Run checks</em> again. All rows should turn green if things are set.
+            </li>
+          </ul>
+        </CardContent>
+      </Card>
     </div>
   )
 }
 
-function MaterialCard({ item, rank, onAdd }: { item: UnlockCard; rank: number; onAdd: () => void }) {
-  const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`
-  const canQuickAdd = !!item.materialId && /^[0-9a-f-]{36}$/i.test(item.materialId)
-
+function StatusPill({ status }: { status: Status }) {
+  const map: Record<Status, { label: string; className: string; icon: ReactNode }> = {
+    unknown: { label: 'Unknown', className: 'bg-muted text-foreground', icon: <AlertCircle className="h-4 w-4" /> },
+    pass: { label: 'Pass', className: 'bg-emerald-600 text-white', icon: <Check className="h-4 w-4" /> },
+    fail: { label: 'Fail', className: 'bg-red-600 text-white', icon: <X className="h-4 w-4" /> },
+    warn: { label: 'Warn', className: 'bg-amber-500 text-white', icon: <AlertCircle className="h-4 w-4" /> },
+  }
+  const item = map[status]
   return (
-    <Card className="hover:shadow-lg transition-all">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Badge className="text-lg px-3 py-1">{medal}</Badge>
-            <div>
-              <CardTitle className="text-xl">{item.label}</CardTitle>
-              <p className="text-sm text-gray-600 mt-1">
-                Unlocks <span className="font-bold text-orange-600">{item.unlocks}</span> {item.unlocks === 1 ? 'fly' : 'flies'}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {canQuickAdd && (
-              <Button onClick={onAdd} size="sm" title="Add this specific catalog item to your inventory">
-                <Plus className="w-4 h-4 mr-1" /> Add to inventory
-              </Button>
-            )}
-            <a href={shopUrl(item.label)} target="_blank" rel="noreferrer">
-              <Button variant="outline" size="sm">Shop</Button>
-            </a>
-            <TrendingUp className="w-6 h-6 text-green-600" />
-            <div className="text-right">
-              <div className="text-2xl font-bold text-green-600">{item.unlocks}</div>
-              <div className="text-xs text-gray-500">flies</div>
-            </div>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <details className="rounded border p-3">
-          <summary className="cursor-pointer text-sm text-gray-700">Show flies</summary>
-          <ul className="mt-2 text-sm text-gray-700 list-disc pl-5">
-            {item.flies.map((n) => <li key={n}>{n}</li>)}
-          </ul>
-        </details>
-      </CardContent>
-    </Card>
+    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${item.className}`}>
+      {item.icon}
+      {item.label}
+    </span>
   )
 }
