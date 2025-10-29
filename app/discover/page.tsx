@@ -1,8 +1,13 @@
+// app/discover/page.tsx
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 
 type StrArr = string[] | null | undefined
 
@@ -20,13 +25,15 @@ type UserFly = {
   sizes: (number | string)[] | null
 }
 
+type CatalogMat = { id: string; name: string; color: string | null }
+
 type UserMat = {
   link: string   // normalized fly link id (user_fly_id or fly_id)
   required: boolean
   material_id: string | null
   material_name: string | null
   color: string | null
-  materials?: { id: string; name: string; color: string | null } | null
+  materials?: CatalogMat | null
 }
 
 const CHUNK = 80 // keep the URL short to avoid 400s on long IN lists
@@ -66,10 +73,10 @@ export default function DiscoverPage() {
         }))
         setFliesS({ loading: false, error: null, data: myFlies })
 
-        // 2) Load my materials → handle schema variants + long URL
+        // 2) Load my materials (no nested join to avoid ambiguous embed), then hydrate names
         setMatsS(s => ({ ...s, loading: true, error: null }))
         const ids = myFlies.map(f => f.id)
-        const rows = await fetchUserFlyMaterials(ids)
+        const rows = await fetchUserFlyMaterials(ids, user.id)
         setMatsS({ loading: false, error: null, data: rows })
       } catch (e: any) {
         console.error('Error loading data:', e)
@@ -80,8 +87,7 @@ export default function DiscoverPage() {
     })()
   }, [user])
 
-  // Simple example “What can I tie?” calculation
-  // For now we just group materials by fly
+  // Group materials by fly
   const matsByFly = useMemo(() => {
     const map = new Map<string, UserMat[]>()
     ;(matsS.data ?? []).forEach(m => {
@@ -97,7 +103,14 @@ export default function DiscoverPage() {
   return (
     <div className="min-h-screen p-8">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold mb-4">🎯 What Can I Tie?</h1>
+        <div className="flex items-center gap-3 mb-4">
+          <h1 className="text-3xl font-bold">🎯 What Can I Tie?</h1>
+          <div className="ml-auto flex items-center gap-2">
+            <Link href="/discover/picklist">
+              <Button variant="outline">🧾 Shop Picklist</Button>
+            </Link>
+          </div>
+        </div>
 
         {!user && (
           <div className="p-4 border rounded bg-yellow-50">
@@ -129,12 +142,19 @@ export default function DiscoverPage() {
                         {mats.length} materials
                       </div>
                     </div>
+
                     {mats.length > 0 && (
                       <ul className="mt-3 text-sm list-disc pl-5 space-y-1">
                         {mats.slice(0, 8).map((m, i) => (
                           <li key={i}>
-                            {(m.materials?.name ?? m.material_name ?? 'Unknown')}
-                            {m.color ? ` (${m.color})` : ''}
+                            {(m.materials?.name ??
+                              m.material_name ??
+                              'Unknown')}
+                            {(() => {
+                              // Prefer explicit color on the user row; else fallback to catalog color
+                              const c = m.color ?? m.materials?.color ?? null
+                              return c ? ` (${c})` : ''
+                            })()}
                             {!m.required ? <span className="text-gray-500"> — optional</span> : null}
                           </li>
                         ))}
@@ -153,31 +173,66 @@ export default function DiscoverPage() {
 
 /**
  * Fetch user_fly_materials in chunks and normalize the join key to `link`.
- * Tries schema variants: first `user_fly_id`, then `fly_id`.
+ * Avoids nested materials() to prevent ambiguous-embed errors, then hydrates names
+ * via a separate materials query.
  */
-async function fetchUserFlyMaterials(userFlyIds: string[]): Promise<UserMat[]> {
-  if (userFlyIds.length === 0) return []
+async function fetchUserFlyMaterials(userFlyIds: string[], userId?: string): Promise<UserMat[]> {
+  if (!userId || userFlyIds.length === 0) return []
 
-  const tryCol = async (col: 'user_fly_id' | 'fly_id') => {
-    const batches = chunk(userFlyIds, CHUNK)
-    const out: UserMat[] = []
-    for (const ids of batches) {
-      const sel = `link:${col},required,material_id,material_name,color,materials(id,name,color)`
-      const q = supabase.from('user_fly_materials').select(sel).in(col, ids)
-      const { data, error } = await q
-      if (error) {
-        // Bubble up for fallback to kick in
-        throw error
+  const out: UserMat[] = []
+  const batches = chunk(userFlyIds, CHUNK)
+
+  // Try newer schema first (user_fly_id), fall back to fly_id if needed
+  for (const ids of batches) {
+    let got = false
+    for (const col of ['user_fly_id', 'fly_id'] as const) {
+      const { data, error } = await supabase
+        .from('user_fly_materials')
+        .select(
+          // NOTE: no nested materials(...) to avoid ambiguous embed
+          `link:${col}, required, material_id, material_name, color`
+        )
+        .eq('user_id', userId)
+        .in(col, ids)
+
+      if (!error && data) {
+        out.push(...(data as any[]))
+        got = true
+        break
       }
-      out.push(...((data ?? []) as any[]))
+      if (error && col === 'fly_id') {
+        console.error('fetchUserFlyMaterials failed:', error)
+      }
     }
-    return out
+    if (!got) {
+      // no rows for this batch (ok)
+    }
   }
 
-  try {
-    return await tryCol('user_fly_id')
-  } catch {
-    // Fallback if your schema uses fly_id (older/newer variant)
-    return await tryCol('fly_id')
+  // Hydrate catalog names/colors separately (avoids ambiguous embed)
+  const idsToHydrate = Array.from(
+    new Set(
+      out
+        .map(r => r.material_id)
+        .filter((x): x is string => !!x)
+    )
+  )
+  const matMap = new Map<string, CatalogMat>()
+  if (idsToHydrate.length) {
+    for (const ids of chunk(idsToHydrate, 100)) {
+      const { data, error } = await supabase
+        .from('materials')
+        .select('id, name, color')
+        .in('id', ids)
+      if (!error && data) {
+        for (const m of data as CatalogMat[]) matMap.set(m.id, m)
+      }
+    }
   }
+
+  // Attach hydrated materials if available
+  return out.map(r => ({
+    ...r,
+    materials: r.material_id ? (matMap.get(r.material_id) ?? null) : null,
+  }))
 }

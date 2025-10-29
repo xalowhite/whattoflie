@@ -8,6 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { AlertCircle, Plus, Trash2, Upload } from 'lucide-react'
+import { parseFliesCSV } from '@/lib/parseFliesCSV'
+
 
 type StrArr = string[] | null | undefined
 
@@ -47,65 +49,23 @@ function normalizeName(s: string) {
 
 /** CSV parser the page expects */
 function parseCSV(text: string) {
-  // Columns: name,category,difficulty,sizes,target_species,colorways,image_url,materials
-  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean)
-  if (lines.length === 0) return []
-  const guessHeader = /(^|,)name(,|$)/i.test(lines[0]) && /(,category|,materials)/i.test(lines[0])
-
-  const rows: Array<{
-    name: string
-    category: string
-    difficulty: string | null
-    sizes: string[]
-    target_species: string[]
-    colorways: string[]
-    image_url: string | null
-    materials: UserFlyMaterial[]
-  }> = []
-
-  const header = guessHeader ? lines.shift()!.split(',').map(s => s.trim().toLowerCase()) : []
-  for (const raw of lines) {
-    const cols = raw.split(',').map(s => s.trim())
-    const get = (key: string, idxFallback: number) => {
-      if (guessHeader) {
-        const i = header.indexOf(key)
-        return i >= 0 ? (cols[i] ?? '') : ''
-      }
-      return cols[idxFallback] ?? ''
-    }
-
-    const name = get('name', 0)
-    if (!name) continue
-
-    const category = get('category', 1) || 'trout'
-    const difficulty = get('difficulty', 2) || null
-    const sizesStr = get('sizes', 3)
-    const speciesStr = get('target_species', 4)
-    const colorwaysStr = get('colorways', 5)
-    const image_url = get('image_url', 6) || null
-    const materialsStr = get('materials', 7)
-
-    const parseArray = (s: string) => (s ? s.split(/[;|]/).map(t => t.trim()).filter(Boolean) : [])
-
-    const sizes = parseArray(sizesStr)
-    const target_species = parseArray(speciesStr)
-    const colorways = parseArray(colorwaysStr)
-
-    // materials are "name@color@required" separated by ';' or '|'
-    const materials = (materialsStr ? materialsStr.split(/[;|]/) : [])
-      .map(m => m.trim())
-      .filter(Boolean)
-      .map((chunk, idx): UserFlyMaterial => {
-        const parts = chunk.split('@').map(s => s.trim())
-        const material_name = parts[0] || ''
-        const color = parts[1] || null
-        const req = (parts[2]?.toLowerCase() ?? 'req').startsWith('opt') ? false : true
-        return { material_name, color, required: req, position: idx, material_id: null }
-      })
-
-    rows.push({ name, category, difficulty, sizes, target_species, colorways, image_url, materials })
-  }
-  return rows
+  const base = parseFliesCSV(text)
+  return base.map((r) => ({
+    name: r.name,
+    category: r.category,
+    difficulty: r.difficulty,
+    sizes: r.sizes,
+    target_species: r.target_species,
+    colorways: r.colorways,
+    image_url: r.image_url,
+    materials: r.materialsRaw.map((chunk, idx) => {
+      const parts = chunk.split('@').map(s => s.trim())
+      const material_name = parts[0] || ''
+      const color = parts[1] || null
+      const req = (parts[2]?.toLowerCase() ?? 'req').startsWith('opt') ? false : true
+      return { material_name, color, required: req, position: idx, material_id: null }
+    }),
+  }))
 }
 
 function arrayify(x: any): string[] {
@@ -816,3 +776,4 @@ export default function CompendiumPage() {
     </div>
   )
 }
+
