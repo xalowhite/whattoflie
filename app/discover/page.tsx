@@ -1,166 +1,293 @@
-// app/discover/page.tsx
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { AlertCircle, Check, Plus, ShoppingCart, Upload, Image as ImageIcon } from 'lucide-react'
 
-type StrArr = string[] | null | undefined
-
-type UIFetchState<T> = {
-  loading: boolean
-  error: string | null
-  data: T | null
-}
-
-type UserFly = {
-  id: string
+type TieRow = {
+  user_fly_id: string
   name: string
-  category: string
+  required_total: number
+  required_have: number
+  required_missing: number
+  missing_names: string | null
+  missing_ids: string[] | null
+  tieable: boolean
+}
+
+type FlyMeta = {
+  id: string
+  image_url: string | null
+  category: string | null
   difficulty: string | null
-  sizes: (number | string)[] | null
-}
-
-type CatalogMat = { id: string; name: string; color: string | null }
-
-type UserMat = {
-  link: string   // normalized fly link id (user_fly_id or fly_id)
-  required: boolean
-  material_id: string | null
-  material_name: string | null
-  color: string | null
-  materials?: CatalogMat | null
-}
-
-const CHUNK = 80 // keep the URL short to avoid 400s on long IN lists
-
-function chunk<T>(arr: T[], size = CHUNK): T[][] {
-  const out: T[][] = []
-  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size))
-  return out
 }
 
 export default function DiscoverPage() {
   const { user } = useAuth()
-  const [fliesS, setFliesS] = useState<UIFetchState<UserFly[]>>({ loading: true, error: null, data: null })
-  const [matsS, setMatsS] = useState<UIFetchState<UserMat[]>>({ loading: true, error: null, data: null })
+
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [rows, setRows] = useState<TieRow[]>([])
+  const [meta, setMeta] = useState<Record<string, FlyMeta>>({})
+  const [adding, setAdding] = useState<Record<string, boolean>>({}) // materialId -> busy
+  const [bulkAdding, setBulkAdding] = useState<Record<string, boolean>>({}) // flyId -> busy
+  const [search, setSearch] = useState('')
 
   useEffect(() => {
     if (!user) {
-      setFliesS({ loading: false, error: null, data: [] })
-      setMatsS({ loading: false, error: null, data: [] })
+      setRows([])
+      setMeta({})
+      setLoading(false)
       return
     }
-    ;(async () => {
-      try {
-        // 1) Load my flies
-        setFliesS(s => ({ ...s, loading: true, error: null }))
-        const { data: ufData, error: ufErr } = await supabase
-          .from('user_flies')
-          .select('id, name, category, difficulty, sizes')
-          .order('name', { ascending: true })
-        if (ufErr) throw ufErr
-        const myFlies: UserFly[] = (ufData ?? []).map((r: any) => ({
-          id: r.id,
-          name: r.name,
-          category: r.category,
-          difficulty: r.difficulty ?? null,
-          sizes: Array.isArray(r.sizes) ? r.sizes : (r.sizes ?? []),
-        }))
-        setFliesS({ loading: false, error: null, data: myFlies })
-
-        // 2) Load my materials (no nested join to avoid ambiguous embed), then hydrate names
-        setMatsS(s => ({ ...s, loading: true, error: null }))
-        const ids = myFlies.map(f => f.id)
-        const rows = await fetchUserFlyMaterials(ids, user.id)
-        setMatsS({ loading: false, error: null, data: rows })
-      } catch (e: any) {
-        console.error('Error loading data:', e)
-        setFliesS(s => ({ ...s, loading: false }))
-        setMatsS({ loading: false, error: e?.message ?? 'Failed to load data.', data: null })
-        alert('Failed to load data.')
-      }
-    })()
+    void reload()
   }, [user])
 
-  // Group materials by fly
-  const matsByFly = useMemo(() => {
-    const map = new Map<string, UserMat[]>()
-    ;(matsS.data ?? []).forEach(m => {
-      const arr = map.get(m.link) ?? []
-      arr.push(m)
-      map.set(m.link, arr)
-    })
-    return map
-  }, [matsS.data])
+  async function reload() {
+    try {
+      setLoading(true)
+      setError(null)
 
-  const myFlies = fliesS.data ?? []
+      // 1) Tieability from the view
+      const { data: tieData, error: tErr } = await supabase
+        .from('v_tieability_user_flies')
+        .select('user_fly_id, name, required_total, required_have, required_missing, missing_names, missing_ids, tieable')
+        .order('tieable', { ascending: false })
+        .order('required_missing', { ascending: true })
+      if (tErr) throw tErr
+      setRows((tieData ?? []) as TieRow[])
 
-  return (
-    <div className="min-h-screen p-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex items-center gap-3 mb-4">
-          <h1 className="text-3xl font-bold">🎯 What Can I Tie?</h1>
-          <div className="ml-auto flex items-center gap-2">
-            <Link href="/discover/picklist">
-              <Button variant="outline">🧾 Shop Picklist</Button>
-            </Link>
-          </div>
-        </div>
+      // 2) Minimal meta (image_url & a few tags)
+      const ids = (tieData ?? []).map((r: any) => r.user_fly_id)
+      if (ids.length) {
+        const { data: uf, error: ufErr } = await supabase
+          .from('user_flies')
+          .select('id, image_url, category, difficulty')
+          .in('id', ids)
+        if (ufErr) throw ufErr
+        const map: Record<string, FlyMeta> = {}
+        for (const r of uf ?? []) {
+          map[r.id] = {
+            id: r.id,
+            image_url: r.image_url ?? null,
+            category: r.category ?? null,
+            difficulty: r.difficulty ?? null,
+          }
+        }
+        setMeta(map)
+      } else {
+        setMeta({})
+      }
+    } catch (e: any) {
+      console.error('Discover reload failed:', e)
+      setError(e?.message ?? 'Failed to load data.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
-        {!user && (
+  async function addMaterial(materialId: string) {
+    if (!user || !materialId) return
+    setAdding(a => ({ ...a, [materialId]: true }))
+    try {
+      const { error } = await supabase
+        .from('user_inventory')
+        .upsert(
+          { user_id: user.id, material_id: materialId, quantity: 1, unit: 'pieces' },
+          { onConflict: 'user_id,material_id', ignoreDuplicates: true }
+        )
+      if (error) throw error
+      await reload()
+    } catch (e: any) {
+      alert(e?.message ?? 'Failed to add material')
+    } finally {
+      setAdding(a => ({ ...a, [materialId]: false }))
+    }
+  }
+
+  async function addAllMissingForFly(flyId: string, materialIds: (string | null | undefined)[]) {
+    if (!user) return
+    const ids = (materialIds ?? []).filter(Boolean) as string[]
+    if (!ids.length) return
+
+    setBulkAdding(s => ({ ...s, [flyId]: true }))
+    try {
+      const rows = ids.map(id => ({
+        user_id: user.id,
+        material_id: id,
+        quantity: 1,
+        unit: 'pieces'
+      }))
+      const { error } = await supabase
+        .from('user_inventory')
+        .upsert(rows, { onConflict: 'user_id,material_id', ignoreDuplicates: true })
+      if (error) throw error
+      await reload()
+    } catch (e: any) {
+      alert(e?.message ?? 'Failed to add materials')
+    } finally {
+      setBulkAdding(s => ({ ...s, [flyId]: false }))
+    }
+  }
+
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase().trim()
+    if (!q) return rows
+    return rows.filter(r =>
+      r.name.toLowerCase().includes(q) ||
+      (meta[r.user_fly_id]?.category ?? '').toLowerCase().includes(q) ||
+      (meta[r.user_fly_id]?.difficulty ?? '').toLowerCase().includes(q)
+    )
+  }, [rows, search, meta])
+
+  if (!user) {
+    return (
+      <div className="min-h-screen p-8">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-3xl font-bold mb-4">🎯 What Can I Tie?</h1>
           <div className="p-4 border rounded bg-yellow-50">
             Please sign in to see your personalized results.
           </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen p-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-6">
+          <h1 className="text-3xl font-bold">🎯 What Can I Tie?</h1>
+          <div className="ml-auto flex gap-2">
+            <Link href="/inventory"><Button variant="outline">📦 Inventory</Button></Link>
+            <Link href="/compendium"><Button variant="outline">📚 Compendium</Button></Link>
+            <Link href="/discover/picklist"><Button><ShoppingCart className="w-4 h-4 mr-1" /> Shop mode</Button></Link>
+          </div>
+        </div>
+
+        {/* Controls */}
+        <div className="mb-4 flex items-center gap-3">
+          <input
+            value={search}
+            onChange={(e)=>setSearch(e.target.value)}
+            placeholder="Search by fly name, category, or difficulty…"
+            className="w-full px-3 py-2 border rounded-lg"
+          />
+          <Button variant="secondary" onClick={reload}>Refresh</Button>
+        </div>
+
+        {/* States */}
+        {loading && <div className="p-4 border rounded bg-gray-50">Loading…</div>}
+        {error && (
+          <div className="p-4 border rounded bg-red-50 text-red-700 flex items-center gap-2">
+            <AlertCircle className="w-4 h-4" /> {error}
+          </div>
         )}
 
-        {user && (
+        {!loading && !error && (
           <>
-            <div className="mb-4 text-sm text-gray-600">
-              Loaded flies: <b>{myFlies.length}</b> • Loaded materials rows:{' '}
-              <b>{matsS.data?.length ?? 0}</b>
-              {matsS.error ? (
-                <span className="text-red-600 ml-2">Error: {matsS.error}</span>
-              ) : null}
+            <div className="text-sm text-gray-600 mb-3">
+              Showing <b>{filtered.length}</b> of {rows.length} flies
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {myFlies.map(f => {
-                const mats = matsByFly.get(f.id) ?? []
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filtered.map((r) => {
+                const m = meta[r.user_fly_id]
+                const missingIds = (r.missing_ids ?? []).filter(Boolean) as string[]
+                const hasImage = !!m?.image_url
                 return (
-                  <div key={f.id} className="border rounded p-4 bg-white">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="text-lg font-semibold">{f.name}</div>
-                        <div className="text-xs text-gray-500 capitalize">{f.category}</div>
+                  <Card key={r.user_fly_id} className="hover:shadow-lg transition-all">
+                    <CardHeader className="pb-2">
+                      <div className="flex items-start justify-between">
+                        <CardTitle className="text-xl leading-tight">{r.name}</CardTitle>
+                        <Badge variant={r.tieable ? 'default' : 'secondary'}>
+                          {r.tieable ? 'Tieable now' : `Missing ${r.required_missing}`}
+                        </Badge>
                       </div>
-                      <div className="text-xs px-2 py-1 rounded bg-gray-100">
-                        {mats.length} materials
+                      <div className="text-xs text-gray-500 space-x-2">
+                        {m?.category && <span className="capitalize">{m.category}</span>}
+                        {m?.difficulty && <span>• {m.difficulty}</span>}
                       </div>
-                    </div>
+                    </CardHeader>
+                    <CardContent>
+                      {/* Image + Upload */}
+                      <div className="w-full h-40 rounded border flex items-center justify-center mb-3 overflow-hidden bg-white">
+                        {hasImage ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={m!.image_url!}
+                            alt={r.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="text-gray-400 text-sm flex flex-col items-center">
+                            <ImageIcon className="w-6 h-6 mb-1" />
+                            No image
+                          </div>
+                        )}
+                      </div>
+                      <UploadFlyImage
+                        flyId={r.user_fly_id}
+                        onUploaded={async () => { await reload() }}
+                      />
 
-                    {mats.length > 0 && (
-                      <ul className="mt-3 text-sm list-disc pl-5 space-y-1">
-                        {mats.slice(0, 8).map((m, i) => (
-                          <li key={i}>
-                            {(m.materials?.name ??
-                              m.material_name ??
-                              'Unknown')}
-                            {(() => {
-                              // Prefer explicit color on the user row; else fallback to catalog color
-                              const c = m.color ?? m.materials?.color ?? null
-                              return c ? ` (${c})` : ''
-                            })()}
-                            {!m.required ? <span className="text-gray-500"> — optional</span> : null}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
+                      {!r.tieable && (
+                        <div className="mt-4">
+                          <div className="text-sm font-medium mb-1">Missing materials</div>
+                          <div className="flex flex-wrap gap-2">
+                            {missingIds.length === 0 && (
+                              <span className="text-xs text-gray-500">
+                                {r.missing_names || 'Unknown/Uncatalogued items'}
+                              </span>
+                            )}
+                            {missingIds.map((id) => (
+                              <Button
+                                key={id}
+                                size="sm"
+                                variant="outline"
+                                disabled={!!adding[id]}
+                                onClick={() => addMaterial(id)}
+                              >
+                                {adding[id] ? 'Adding…' : (<><Plus className="w-4 h-4 mr-1" /> Add</>)}
+                              </Button>
+                            ))}
+                          </div>
+
+                          {missingIds.length > 1 && (
+                            <div className="mt-2">
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                disabled={!!bulkAdding[r.user_fly_id]}
+                                onClick={() => addAllMissingForFly(r.user_fly_id, r.missing_ids ?? [])}
+                              >
+                                {bulkAdding[r.user_fly_id] ? 'Adding…' : 'Add all missing'}
+                              </Button>
+                            </div>
+                          )}
+
+                          {/* Names (nice to show even when we have IDs) */}
+                          {r.missing_names && (
+                            <div className="mt-3 text-xs text-gray-600">
+                              {r.missing_names}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {r.tieable && (
+                        <div className="mt-3 text-emerald-700 text-sm flex items-center gap-2">
+                          <Check className="w-4 h-4" /> You have everything required.
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
                 )
               })}
             </div>
@@ -171,68 +298,60 @@ export default function DiscoverPage() {
   )
 }
 
-/**
- * Fetch user_fly_materials in chunks and normalize the join key to `link`.
- * Avoids nested materials() to prevent ambiguous-embed errors, then hydrates names
- * via a separate materials query.
- */
-async function fetchUserFlyMaterials(userFlyIds: string[], userId?: string): Promise<UserMat[]> {
-  if (!userId || userFlyIds.length === 0) return []
+/* ---------- Inline Upload Component ---------- */
+function UploadFlyImage({ flyId, onUploaded }: { flyId: string, onUploaded?: () => void }) {
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [busy, setBusy] = useState(false)
 
-  const out: UserMat[] = []
-  const batches = chunk(userFlyIds, CHUNK)
+  async function pickFile() {
+    inputRef.current?.click()
+  }
 
-  // Try newer schema first (user_fly_id), fall back to fly_id if needed
-  for (const ids of batches) {
-    let got = false
-    for (const col of ['user_fly_id', 'fly_id'] as const) {
-      const { data, error } = await supabase
-        .from('user_fly_materials')
-        .select(
-          // NOTE: no nested materials(...) to avoid ambiguous embed
-          `link:${col}, required, material_id, material_name, color`
-        )
-        .eq('user_id', userId)
-        .in(col, ids)
+  async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setBusy(true)
+    try {
+      // Ensure bucket "fly-images" exists and is public
+      const path = `${flyId}/${Date.now()}_${file.name.replace(/\s+/g, '_')}`
+      const { error: upErr } = await supabase.storage.from('fly-images').upload(path, file, {
+        upsert: true,
+        cacheControl: '3600',
+      })
+      if (upErr) throw upErr
 
-      if (!error && data) {
-        out.push(...(data as any[]))
-        got = true
-        break
-      }
-      if (error && col === 'fly_id') {
-        console.error('fetchUserFlyMaterials failed:', error)
-      }
-    }
-    if (!got) {
-      // no rows for this batch (ok)
+      const { data: urlData } = supabase.storage.from('fly-images').getPublicUrl(path)
+      const publicUrl = urlData?.publicUrl
+      if (!publicUrl) throw new Error('Could not resolve public URL')
+
+      const { error: updErr } = await supabase
+        .from('user_flies')
+        .update({ image_url: publicUrl })
+        .eq('id', flyId)
+      if (updErr) throw updErr
+
+      onUploaded?.()
+    } catch (e: any) {
+      alert(e?.message ?? 'Upload failed')
+    } finally {
+      setBusy(false)
+      if (inputRef.current) inputRef.current.value = ''
     }
   }
 
-  // Hydrate catalog names/colors separately (avoids ambiguous embed)
-  const idsToHydrate = Array.from(
-    new Set(
-      out
-        .map(r => r.material_id)
-        .filter((x): x is string => !!x)
-    )
+  return (
+    <div className="flex items-center gap-2">
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={onFile}
+      />
+      <Button variant="outline" size="sm" onClick={pickFile} disabled={busy}>
+        <Upload className="w-4 h-4 mr-1" /> {busy ? 'Uploading…' : 'Upload image'}
+      </Button>
+      <span className="text-xs text-gray-500">JPEG/PNG/WebP, ~2–5MB ok.</span>
+    </div>
   )
-  const matMap = new Map<string, CatalogMat>()
-  if (idsToHydrate.length) {
-    for (const ids of chunk(idsToHydrate, 100)) {
-      const { data, error } = await supabase
-        .from('materials')
-        .select('id, name, color')
-        .in('id', ids)
-      if (!error && data) {
-        for (const m of data as CatalogMat[]) matMap.set(m.id, m)
-      }
-    }
-  }
-
-  // Attach hydrated materials if available
-  return out.map(r => ({
-    ...r,
-    materials: r.material_id ? (matMap.get(r.material_id) ?? null) : null,
-  }))
 }
