@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { AlertCircle, Plus, Trash2, Upload } from 'lucide-react'
 import { parseFliesCSV } from '@/lib/parseFliesCSV'
-import FlyDetailDialog, { FlyDetailData } from '@/components/FlyDetailDialog'
+import FlyDetailDialog, { type FlyDetailData } from '@/components/FlyDetailDialog/FlyDetailDialog'
+
 
 type StrArr = string[] | null | undefined
 
