@@ -6,7 +6,7 @@ declare global {
     id: string
     name: string
     category?: string | null
-    source?: 'global' | 'user'       // <-- you used this in page.tsx
+    source?: 'global' | 'user'
     image_url?: string | null
     difficulty?: string | null
     sizes?: (number | string)[] | null
