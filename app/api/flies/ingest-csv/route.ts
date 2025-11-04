@@ -1,5 +1,6 @@
+// app/api/flies/ingest-csv/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '../../../../lib/supabaseAdmin' // <= change to relative
+import { supabaseAdmin } from '@/lib/supabaseAdmin' // keep this path; adjust only if your lib path differs
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'

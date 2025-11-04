@@ -1,3 +1,4 @@
+// app/page.tsx
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -11,7 +12,7 @@ interface Fly {
   id: string
   source: FlySource
   name: string
-  category: string // stored as non-null string locally (we coerce to '')
+  category: string
   difficulty: string | null
   sizes: (number | string)[] | null
   image_url?: string | null
@@ -34,11 +35,6 @@ export default function Home() {
 
   useEffect(() => { void loadFlies() }, [])
   useEffect(() => {
-    const prev = document.body.style.overflow
-    if (selected) document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = prev }
-  }, [selected])
-  useEffect(() => {
     const needle = q.toLowerCase().trim()
     if (!needle) setFiltered(allFlies)
     else setFiltered(allFlies.filter(f =>
@@ -51,18 +47,15 @@ export default function Home() {
     try {
       setLoading(true)
 
-      // Get current auth user (avoid name shadowing with useAuth's `user`)
       const { data: auth } = await supabase.auth.getUser()
       const authUser = auth?.user ?? null
 
-      // Global flies (public)
-      const { data: g, error: gErr } = await supabase
+      // Global flies
+      const { data: g } = await supabase
         .from('flies')
         .select('id, name, category, difficulty, sizes, image_url')
         .order('name')
         .limit(1000)
-
-      if (gErr) console.error('flies error', gErr)
 
       const globals: Fly[] = (g ?? []).map((r: any) => ({
         id: r.id,
@@ -74,15 +67,13 @@ export default function Home() {
         image_url: r.image_url ?? null,
       }))
 
-      // User flies (private)
+      // User flies
       let mine: Fly[] = []
       if (authUser) {
-        const { data: u, error: uErr } = await supabase
+        const { data: u } = await supabase
           .from('user_flies')
           .select('id, name, category, difficulty, sizes, image_url')
           .order('name')
-
-        if (uErr) console.error('user_flies error', uErr)
 
         mine = (u ?? []).map((r: any) => ({
           id: r.id,
@@ -113,7 +104,10 @@ export default function Home() {
 
         const { data: fms } = await supabase
           .from('fly_materials')
-          .select('required, materials ( name, color )')
+          .select(`
+            required,
+            mat:materials!fly_materials_material_id_fkey ( name, color )
+          `)
           .eq('fly_id', fly.id)
 
         const { data: tuts } = await supabase
@@ -131,8 +125,8 @@ export default function Home() {
           colorways: base?.colorways ?? [],
           materials: (fms ?? []).map((r: any) => ({
             required: r.required ?? true,
-            name: r.materials?.name ?? 'Unknown',
-            color: r.materials?.color ?? null,
+            name: r.mat?.name ?? 'Unknown',
+            color: r.mat?.color ?? null,
           })),
           tutorials: (tuts ?? []) as any,
         }
@@ -143,13 +137,15 @@ export default function Home() {
           .select('id, name, category, difficulty, sizes, image_url, target_species, colorways')
           .eq('id', fly.id).single()
 
-        // Be resilient to either user_fly_id or fly_id existing in the schema
-        const { data: fms, error: fmErr } = await supabase
+        const { data: fms } = await supabase
           .from('user_fly_materials')
-          .select('required, material_name, color, materials ( name, color )')
-          .or(`user_fly_id.eq.${fly.id},fly_id.eq.${fly.id}`)
-
-        if (fmErr) console.error('user_fly_materials error', fmErr)
+          .select(`
+            required,
+            material_name,
+            color,
+            mat:materials!user_fly_materials_material_id_fkey ( name, color )
+          `)
+          .eq('user_fly_id', fly.id)
 
         const { data: tuts } = await supabase
           .from('user_fly_tutorials')
@@ -158,8 +154,8 @@ export default function Home() {
 
         const mats = (fms ?? []).map((r: any) => ({
           required: r.required ?? true,
-          name: r.materials?.name ?? r.material_name ?? 'Unknown',
-          color: r.materials?.color ?? r.color ?? null
+          name: r.mat?.name ?? r.material_name ?? 'Unknown',
+          color: r.mat?.color ?? r.color ?? null
         }))
 
         const detail: FlyDetail = {
@@ -220,23 +216,13 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Quick Nav Buttons (keep these for now; top Nav is global) */}
         <div className="mt-2 mb-8 flex gap-2 flex-wrap">
-          <Link href="/inventory">
-            <button className="px-3 py-2 text-sm rounded-lg border hover:bg-gray-50">📦 Inventory</button>
-          </Link>
-          <Link href="/discover">
-            <button className="px-3 py-2 text-sm rounded-lg border hover:bg-gray-50">🎯 What Can I Tie?</button>
-          </Link>
-          <Link href="/unlock">
-            <button className="px-3 py-2 text-sm rounded-lg border hover:bg-gray-50">🔓 Unlock</button>
-          </Link>
-          <Link href="/compendium">
-            <button className="px-3 py-2 text-sm rounded-lg border hover:bg-gray-50">📚 Compendium</button>
-          </Link>
+          <Link href="/inventory"><button className="px-3 py-2 text-sm rounded-lg border hover:bg-gray-50">📦 Inventory</button></Link>
+          <Link href="/discover"><button className="px-3 py-2 text-sm rounded-lg border hover:bg-gray-50">🎯 What Can I Tie?</button></Link>
+          <Link href="/unlock"><button className="px-3 py-2 text-sm rounded-lg border hover:bg-gray-50">🔓 Unlock</button></Link>
+          <Link href="/compendium"><button className="px-3 py-2 text-sm rounded-lg border hover:bg-gray-50">📚 Compendium</button></Link>
         </div>
 
-        {/* Fly Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map((fly) => (
             <button
@@ -262,29 +248,18 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Modal */}
       {selected && (
         <div className="fixed inset-0 z-50" role="dialog" aria-modal="true">
           <div className="absolute inset-0 bg-black/40" onClick={() => setSelected(null)} />
           <div className="absolute inset-0 overflow-y-auto">
             <div className="min-h-full flex items-center justify-center p-4">
-              <div
-                className="w-full max-w-3xl max-h-[85vh] overflow-y-auto rounded-xl bg-white shadow-2xl"
-                onClick={(e) => e.stopPropagation()}
-              >
+              <div className="w-full max-w-3xl max-h-[85vh] overflow-y-auto rounded-xl bg-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
                 <div className="p-6">
                   <div className="flex items-start justify-between">
                     <h3 className="text-2xl font-bold">{selected.name}</h3>
-                    <button
-                      onClick={() => setSelected(null)}
-                      className="px-3 py-1.5 border rounded-md hover:bg-gray-50"
-                    >
-                      Close
-                    </button>
+                    <button onClick={() => setSelected(null)} className="px-3 py-1.5 border rounded-md hover:bg-gray-50">Close</button>
                   </div>
-                  <div className="mt-2 text-sm text-gray-600 capitalize">
-                    Category: {(selected.category || '').replace('_', ' ')}
-                  </div>
+                  <div className="mt-2 text-sm text-gray-600 capitalize">Category: {(selected.category || '').replace('_', ' ')}</div>
                   {selected.difficulty && (
                     <div className="mt-1">
                       <span className="inline-flex items-center rounded-md bg-gray-100 px-2 py-1 text-xs font-medium capitalize">
@@ -320,8 +295,6 @@ export default function Home() {
                       ))}
                     </div>
                   </div>
-
-                  {/* Tutorials (render links only if they look like URLs) */}
                   {Array.isArray(selected.tutorials) && selected.tutorials.length > 0 && (
                     <div className="mt-6">
                       <h4 className="font-semibold mb-2">Tutorials</h4>

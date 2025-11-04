@@ -1,234 +1,317 @@
+// app/discover/page.tsx
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
-import { useAuth } from '../contexts/AuthContext'
-import { Button } from '@/components/ui/button'
+import { useAuth } from '@/app/contexts/AuthContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { AlertCircle } from 'lucide-react'
 
 type StrArr = string[] | null | undefined
+type FlySource = 'global' | 'user'
 
-type UIFetchState<T> = {
-  loading: boolean
-  error: string | null
-  data: T | null
-}
-
-type UserFly = {
+interface Fly {
   id: string
+  source: FlySource
   name: string
   category: string
   difficulty: string | null
-  sizes: (number | string)[] | null
+  sizes: StrArr
+  image_url?: string | null
 }
 
-type UserMat = {
-  link: string   // normalized fly link id (user_fly_id or fly_id)
-  required: boolean
+interface InventoryItem {
   material_id: string | null
-  material_name: string | null
+  name: string | null
   color: string | null
 }
 
-type Material = {
-  id: string
+interface MatRow {
+  fly_id: string
   name: string
   color: string | null
+  required: boolean
+  material_id: string | null
+  position: number
 }
 
-const CHUNK = 80 // keep the URL short to avoid 400s on long IN lists
+const FK_USER_FLY_MATS = 'user_fly_materials_material_id_fkey'
+const FK_FLY_MATS      = 'fly_materials_material_id_fkey'
 
-function chunk<T>(arr: T[], size = CHUNK): T[][] {
-  const out: T[][] = []
-  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size))
-  return out
-}
-
-export default function DiscoverPage() {
+export default function WhatCanITiePage() {
   const { user } = useAuth()
-  const [fliesS, setFliesS] = useState<UIFetchState<UserFly[]>>({ loading: true, error: null, data: null })
-  const [matsS, setMatsS] = useState<UIFetchState<UserMat[]>>({ loading: true, error: null, data: null })
-  const [materials, setMaterials] = useState<Material[]>([])
+  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    if (!user) {
-      setFliesS({ loading: false, error: null, data: [] })
-      setMatsS({ loading: false, error: null, data: [] })
-      setMaterials([])
-      return
-    }
-    ;(async () => {
-      try {
-        // 0) Load catalog of materials (no embed ambiguity)
-        const { data: matsCat, error: matsErr } = await supabase
-          .from('materials')
-          .select('id, name, color')
-          .limit(20000)
-        if (matsErr) throw matsErr
-        setMaterials(matsCat ?? [])
+  const [globalFlies, setGlobalFlies] = useState<Fly[]>([])
+  const [userFlies, setUserFlies] = useState<Fly[]>([])
+  const [inv, setInv] = useState<InventoryItem[]>([])
+  const [userMatRows, setUserMatRows] = useState<MatRow[]>([])
+  const [globalMatRows, setGlobalMatRows] = useState<MatRow[]>([])
+  const [q, setQ] = useState('')
 
-        // 1) Load my flies
-        setFliesS(s => ({ ...s, loading: true, error: null }))
-        const { data: ufData, error: ufErr } = await supabase
-          .from('user_flies')
-          .select('id, name, category, difficulty, sizes')
-          .order('name', { ascending: true })
-        if (ufErr) throw ufErr
-        const myFlies: UserFly[] = (ufData ?? []).map((r: any) => ({
-          id: r.id,
-          name: r.name,
-          category: r.category,
-          difficulty: r.difficulty ?? null,
-          sizes: Array.isArray(r.sizes) ? r.sizes : (r.sizes ?? []),
-        }))
-        setFliesS({ loading: false, error: null, data: myFlies })
+  const signedIn = !!user
 
-        // 2) Load materials for my flies — **no nested embed**
-        setMatsS(s => ({ ...s, loading: true, error: null }))
-        const ids = myFlies.map(f => f.id)
-        const rows = await fetchUserFlyMaterials(ids) // flat rows, no ambiguous join
-        setMatsS({ loading: false, error: null, data: rows })
-      } catch (e: any) {
-        console.error('Error loading data:', e)
-        setFliesS(s => ({ ...s, loading: false }))
-        setMatsS({ loading: false, error: e?.message ?? 'Failed to load data.', data: [] })
-        alert('Failed to load data.')
+  useEffect(() => { void loadAll() }, [user])
+
+  async function loadAll() {
+    setLoading(true)
+    try {
+      // 1) Global flies (public)
+      {
+        const { data, error } = await supabase
+          .from('flies')
+          .select('id, name, category, difficulty, sizes, image_url')
+          .order('name')
+        if (error) throw error
+        setGlobalFlies((data ?? []).map(r => ({ ...r, source: 'global' as const })))
       }
-    })()
-  }, [user])
 
-  // Map material_id -> catalog entry
-  const matById = useMemo(() => {
-    const m = new Map<string, Material>()
-    for (const row of materials) m.set(row.id, row)
-    return m
-  }, [materials])
+      // 2) Global mapping (if present)
+      {
+        const { data, error } = await supabase
+          .from('fly_materials')
+          .select(`
+            fly_id,
+            required,
+            position,
+            material_name,
+            color,
+            material_id,
+            mat:materials!${FK_FLY_MATS} ( name, color )
+          `)
+        if (error) {
+          console.warn('fly_materials not available (ok if not created yet):', error.message || error)
+          setGlobalMatRows([])
+        } else {
+          const rows: MatRow[] = (data ?? []).map((r: any) => ({
+            fly_id: r.fly_id,
+            required: !!r.required,
+            position: r.position ?? 0,
+            material_id: r.material_id ?? null,
+            name: r.mat?.name ?? r.material_name ?? 'Unknown',
+            color: r.mat?.color ?? r.color ?? null,
+          }))
+          setGlobalMatRows(rows)
+        }
+      }
 
-  // Group materials by fly id
-  const matsByFly = useMemo(() => {
-    const map = new Map<string, UserMat[]>()
-    ;(matsS.data ?? []).forEach(m => {
-      const arr = map.get(m.link) ?? []
-      arr.push(m)
-      map.set(m.link, arr)
-    })
-    return map
-  }, [matsS.data])
+      // 3) Inventory (user or none)
+      if (signedIn) {
+        const { data, error } = await supabase
+          .from('user_inventory')
+          .select('material_id')
+          .eq('user_id', user!.id)
+          .limit(20000)
+        if (error) throw error
+        setInv((data ?? []).map((r: any) => ({
+          material_id: r.material_id ?? null,
+          name: null,
+          color: null,
+        })))
+      } else {
+        setInv([])
+      }
 
-  const myFlies = fliesS.data ?? []
+      // 4) User flies
+      if (signedIn) {
+        const { data, error } = await supabase
+          .from('user_flies')
+          .select('id, name, category, difficulty, sizes, image_url')
+          .order('created_at', { ascending: false })
+        if (error) throw error
+        setUserFlies((data ?? []).map(r => ({ ...r, source: 'user' as const })))
+      } else {
+        setUserFlies([])
+      }
 
-  // Display helper: prefer catalog name/color when we have material_id
-  function matLabel(m: UserMat) {
-    if (m.material_id && matById.has(m.material_id)) {
-      const row = matById.get(m.material_id)!
-      const n = row.name || m.material_name || 'Unknown'
-      const c = row.color || m.color
-      return n + (c ? ` (${c})` : '')
+      // 5) User fly materials (pin FK)
+      if (signedIn) {
+        const { data, error } = await supabase
+          .from('user_fly_materials')
+          .select(`
+            user_fly_id,
+            required,
+            position,
+            material_name,
+            color,
+            material_id,
+            mat:materials!${FK_USER_FLY_MATS} ( name, color )
+          `)
+          .eq('user_id', user!.id)
+          .limit(50000)
+        if (error) throw error
+        const rows: MatRow[] = (data ?? []).map((r: any) => ({
+          fly_id: r.user_fly_id,
+          required: !!r.required,
+          position: r.position ?? 0,
+          material_id: r.material_id ?? null,
+          name: r.mat?.name ?? r.material_name ?? 'Unknown',
+          color: r.mat?.color ?? r.color ?? null,
+        }))
+        setUserMatRows(rows)
+      } else {
+        setUserMatRows([])
+      }
+    } catch (e: any) {
+      console.error('WhatCanITie load failed:', e?.message || e)
+      setGlobalFlies([])
+      setUserFlies([])
+      setInv([])
+      setUserMatRows([])
+      setGlobalMatRows([])
+    } finally {
+      setLoading(false)
     }
-    const n = m.material_name || 'Unknown'
-    return n + (m.color ? ` (${m.color})` : '')
+  }
+
+  const invIds = useMemo(() => new Set(inv.map(i => i.material_id).filter(Boolean) as string[]), [inv])
+  const invNames = useMemo(() => new Set(inv.map(i => (i.name ?? '').toLowerCase().trim()).filter(Boolean)), [inv])
+
+  function haveMaterial(row: MatRow) {
+    if (row.material_id && invIds.has(row.material_id)) return true
+    const n = (row.name ?? '').toLowerCase().trim()
+    if (!n) return false
+    return invNames.has(n)
+  }
+
+  const userReqByFly = useMemo(() => {
+    const m = new Map<string, MatRow[]>()
+    for (const r of userMatRows) {
+      if (!r.required) continue
+      ;(m.get(r.fly_id) ?? m.set(r.fly_id, []).get(r.fly_id)!).push(r)
+    }
+    for (const [k, arr] of m) arr.sort((a,b) => (a.position ?? 0) - (b.position ?? 0))
+    return m
+  }, [userMatRows])
+
+  const globalReqByFly = useMemo(() => {
+    const m = new Map<string, MatRow[]>()
+    for (const r of globalMatRows) {
+      if (!r.required) continue
+      ;(m.get(r.fly_id) ?? m.set(r.fly_id, []).get(r.fly_id)!).push(r)
+    }
+    for (const [k, arr] of m) arr.sort((a,b) => (a.position ?? 0) - (b.position ?? 0))
+    return m
+  }, [globalMatRows])
+
+  const myEligible = useMemo(() => {
+    if (!signedIn) return []
+    return userFlies.filter(f => {
+      const req = userReqByFly.get(f.id) ?? []
+      return req.length > 0 && req.every(haveMaterial)
+    })
+  }, [signedIn, userFlies, userReqByFly, invIds, invNames])
+
+  const globalEligible = useMemo(() => {
+    return globalFlies.filter(f => {
+      const req = globalReqByFly.get(f.id) ?? []
+      return req.length > 0 && req.every(haveMaterial)
+    })
+  }, [globalFlies, globalReqByFly, invIds, invNames])
+
+  const qLower = q.trim().toLowerCase()
+  const showMy = useMemo(() => !qLower ? myEligible : myEligible.filter(f =>
+    [f.name, f.category, f.difficulty ?? ''].some(s => s?.toLowerCase().includes(qLower))
+  ), [myEligible, qLower])
+
+  const showGlobal = useMemo(() => !qLower ? globalEligible : globalEligible.filter(f =>
+    [f.name, f.category, f.difficulty ?? ''].some(s => s?.toLowerCase().includes(qLower))
+  ), [globalEligible, qLower])
+
+  const fliesCount = globalFlies.length + userFlies.length
+  const matRowsCount = globalMatRows.length + userMatRows.length
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl">Loading “What Can I Tie?”…</div>
+      </div>
+    )
   }
 
   return (
-    <div className="min-h-screen p-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex items-center gap-3 mb-4">
-          <h1 className="text-3xl font-bold">🎯 What Can I Tie?</h1>
-          <Link href="/discover/picklist"><Button variant="outline">🧾 Shop Picklist</Button></Link>
+    <div className="mx-auto max-w-7xl p-4 sm:p-6">
+      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-2xl font-semibold">🎯 What Can I Tie?</h1>
+        <div className="text-sm text-muted-foreground">
+          Loaded flies: {fliesCount} • Loaded materials rows: {matRowsCount}
         </div>
+      </div>
 
-        {!user && (
-          <div className="p-4 border rounded bg-yellow-50">
-            Please sign in to see your personalized results.
+      {!signedIn ? (
+        <div className="mb-4 flex items-start gap-2 rounded-md border p-3 text-sm">
+          <AlertCircle className="mt-0.5 h-4 w-4 text-yellow-600" />
+          <div>
+            You’re browsing the default catalog. <Link href="/unlock" className="underline">Sign in</Link> to use your inventory and see exact “can tie” matches.
+          </div>
+        </div>
+      ) : null}
+
+      {globalMatRows.length === 0 && (
+        <div className="mb-4 flex items-start gap-2 rounded-md border p-3 text-sm">
+          <AlertCircle className="mt-0.5 h-4 w-4 text-blue-600" />
+          <div>
+            Global flies don’t have materials mapped yet. You’ll still see matches for <strong>My Flies</strong>.
+          </div>
+        </div>
+      )}
+
+      <div className="mb-6">
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search eligible flies…"
+          className="w-full px-3 py-2 border rounded-lg"
+        />
+      </div>
+
+      <section className="mb-8">
+        <h2 className="text-xl font-semibold mb-2">My Flies — Eligible ({showMy.length})</h2>
+        {showMy.length === 0 ? (
+          <div className="text-sm text-muted-foreground">No matches yet. Add materials to your inventory, or add materials to your flies.</div>
+        ) : (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {showMy.map(f => (
+              <Card key={`my-${f.id}`} className="overflow-hidden">
+                <CardHeader className="pb-2">
+                  <CardTitle className="truncate">{f.name}</CardTitle>
+                </CardHeader>
+                <CardContent className="flex items-center justify-between gap-2">
+                  <Badge variant="outline">My Fly</Badge>
+                  <Badge variant="secondary" className="capitalize">{f.category}</Badge>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         )}
+      </section>
 
-        {user && (
-          <>
-            <div className="mb-4 text-sm text-gray-600">
-              Loaded flies: <b>{myFlies.length}</b> • Loaded materials rows:{' '}
-              <b>{matsS.data?.length ?? 0}</b>
-              {matsS.error ? (
-                <span className="text-red-600 ml-2">Error: {matsS.error}</span>
-              ) : null}
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {myFlies.map(f => {
-                const mats = matsByFly.get(f.id) ?? []
-                return (
-                  <Card key={f.id} className="hover:shadow transition">
-                    <CardHeader className="pb-2">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <CardTitle className="text-lg">{f.name}</CardTitle>
-                          <div className="text-xs text-gray-500 capitalize">{f.category}</div>
-                        </div>
-                        <Badge variant="secondary">{mats.length} materials</Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      {mats.length > 0 ? (
-                        <ul className="mt-2 text-sm list-disc pl-5 space-y-1">
-                          {mats.slice(0, 8).map((m, i) => (
-                            <li key={i}>
-                              {matLabel(m)}
-                              {!m.required ? <span className="text-gray-500"> — optional</span> : null}
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <div className="text-sm text-gray-500">No materials saved yet.</div>
-                      )}
-                    </CardContent>
-                  </Card>
-                )
-              })}
-            </div>
-          </>
+      <section className="mb-12">
+        <h2 className="text-xl font-semibold mb-2">Global — Eligible ({showGlobal.length})</h2>
+        {showGlobal.length === 0 ? (
+          <div className="text-sm text-muted-foreground">No global matches yet.</div>
+        ) : (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {showGlobal.map(f => (
+              <Card key={`g-${f.id}`} className="overflow-hidden">
+                <CardHeader className="pb-2">
+                  <CardTitle className="truncate">{f.name}</CardTitle>
+                </CardHeader>
+                <CardContent className="flex items-center justify-between gap-2">
+                  <Badge>Global</Badge>
+                  <Badge variant="secondary" className="capitalize">{f.category}</Badge>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         )}
+      </section>
+
+      <div className="text-sm text-muted-foreground">
+        Tip: add materials to your <Link href="/inventory" className="underline">Inventory</Link>, and add materials to your flies in the <Link href="/compendium" className="underline">Compendium</Link>.
       </div>
     </div>
   )
-}
-
-/**
- * Fetch user_fly_materials in chunks and normalize the join key to `link`.
- * IMPORTANT: no nested `materials(...)` embed here to avoid ambiguous FK.
- */
-async function fetchUserFlyMaterials(userFlyIds: string[]): Promise<UserMat[]> {
-  if (userFlyIds.length === 0) return []
-  const out: UserMat[] = []
-
-  // Try modern schema first: user_fly_id
-  try {
-    const batches = chunk(userFlyIds)
-    for (const ids of batches) {
-      const sel = 'link:user_fly_id,required,material_id,material_name,color'
-      const { data, error } = await supabase
-        .from('user_fly_materials')
-        .select(sel)
-        .in('user_fly_id', ids)
-
-      if (error) throw error
-      out.push(...((data ?? []) as any[]))
-    }
-    return out
-  } catch {
-    // Fallback to older/newer variant: fly_id
-    const batches = chunk(userFlyIds)
-    for (const ids of batches) {
-      const sel = 'link:fly_id,required,material_id,material_name,color'
-      const { data, error } = await supabase
-        .from('user_fly_materials')
-        .select(sel)
-        .in('fly_id', ids)
-
-      if (error) throw error
-      out.push(...((data ?? []) as any[]))
-    }
-    return out
-  }
 }

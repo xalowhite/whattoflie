@@ -1,7 +1,7 @@
+// app/api/flies/upsert/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '../../../../lib/supabaseAdmin'
+import { supabaseAdmin } from '@/lib/supabaseAdmin'
 
-// same regex logic as DB normalize; avoids needing a client import
 function normalizeName(t: string) {
   return t.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
 }
@@ -19,7 +19,6 @@ export async function POST(req: NextRequest) {
     const supabase = supabaseAdmin()
     const norm = normalizeName(name)
 
-    // Check first to report "existed"
     const pre = await supabase.from('flies').select('id').eq('normalized_name', norm).maybeSingle()
     const existedBefore = !!pre.data
 
