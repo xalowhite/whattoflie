@@ -1,4 +1,5 @@
 'use client'
+type FlyDetailData = globalThis.FlyDetailData
 
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
@@ -9,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { AlertCircle, Plus, Trash2, Upload } from 'lucide-react'
 import { parseFliesCSV } from '@/lib/parseFliesCSV'
-import FlyDetailDialog, { type FlyDetailData } from '@/components/FlyDetailDialog'  // ← changed
+import FlyDetailDialog from '@/components/FlyDetailDialog'
 
 type StrArr = string[] | null | undefined
 

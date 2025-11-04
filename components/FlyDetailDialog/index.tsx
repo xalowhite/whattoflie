@@ -1,3 +1,4 @@
+// components/FlyDetailDialog/index.tsx
 'use client'
 import React from 'react'
 
