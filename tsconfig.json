@@ -14,8 +14,8 @@
     "jsx": "react-jsx",
     "incremental": true,
     "plugins": [{ "name": "next" }],
-    "baseUrl": ".",
-    "paths": { "@/*": ["./*"] }
+    "baseUrl": "."
+    /* NOTE: paths removed to kill '@/*' alias */
   },
   "include": [
     "next-env.d.ts",
