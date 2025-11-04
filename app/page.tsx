@@ -1,4 +1,3 @@
-// app/page.tsx
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -35,6 +34,11 @@ export default function Home() {
 
   useEffect(() => { void loadFlies() }, [])
   useEffect(() => {
+    const prev = document.body.style.overflow
+    if (selected) document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = prev }
+  }, [selected])
+  useEffect(() => {
     const needle = q.toLowerCase().trim()
     if (!needle) setFiltered(allFlies)
     else setFiltered(allFlies.filter(f =>
@@ -46,11 +50,9 @@ export default function Home() {
   async function loadFlies() {
     try {
       setLoading(true)
-
       const { data: auth } = await supabase.auth.getUser()
       const authUser = auth?.user ?? null
 
-      // Global flies
       const { data: g } = await supabase
         .from('flies')
         .select('id, name, category, difficulty, sizes, image_url')
@@ -67,7 +69,6 @@ export default function Home() {
         image_url: r.image_url ?? null,
       }))
 
-      // User flies
       let mine: Fly[] = []
       if (authUser) {
         const { data: u } = await supabase
@@ -145,7 +146,7 @@ export default function Home() {
             color,
             mat:materials!user_fly_materials_material_id_fkey ( name, color )
           `)
-          .eq('user_fly_id', fly.id)
+          .or(`user_fly_id.eq.${fly.id},fly_id.eq.${fly.id}`)
 
         const { data: tuts } = await supabase
           .from('user_fly_tutorials')
@@ -217,10 +218,18 @@ export default function Home() {
         </div>
 
         <div className="mt-2 mb-8 flex gap-2 flex-wrap">
-          <Link href="/inventory"><button className="px-3 py-2 text-sm rounded-lg border hover:bg-gray-50">📦 Inventory</button></Link>
-          <Link href="/discover"><button className="px-3 py-2 text-sm rounded-lg border hover:bg-gray-50">🎯 What Can I Tie?</button></Link>
-          <Link href="/unlock"><button className="px-3 py-2 text-sm rounded-lg border hover:bg-gray-50">🔓 Unlock</button></Link>
-          <Link href="/compendium"><button className="px-3 py-2 text-sm rounded-lg border hover:bg-gray-50">📚 Compendium</button></Link>
+          <Link href="/inventory">
+            <button className="px-3 py-2 text-sm rounded-lg border hover:bg-gray-50">📦 Inventory</button>
+          </Link>
+          <Link href="/discover">
+            <button className="px-3 py-2 text-sm rounded-lg border hover:bg-gray-50">🎯 What Can I Tie?</button>
+          </Link>
+          <Link href="/unlock">
+            <button className="px-3 py-2 text-sm rounded-lg border hover:bg-gray-50">🔓 Unlock</button>
+          </Link>
+          <Link href="/compendium">
+            <button className="px-3 py-2 text-sm rounded-lg border hover:bg-gray-50">📚 Compendium</button>
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -248,18 +257,29 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Modal */}
       {selected && (
         <div className="fixed inset-0 z-50" role="dialog" aria-modal="true">
           <div className="absolute inset-0 bg-black/40" onClick={() => setSelected(null)} />
           <div className="absolute inset-0 overflow-y-auto">
             <div className="min-h-full flex items-center justify-center p-4">
-              <div className="w-full max-w-3xl max-h-[85vh] overflow-y-auto rounded-xl bg-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
+              <div
+                className="w-full max-w-3xl max-h-[85vh] overflow-y-auto rounded-xl bg-white shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <div className="p-6">
                   <div className="flex items-start justify-between">
                     <h3 className="text-2xl font-bold">{selected.name}</h3>
-                    <button onClick={() => setSelected(null)} className="px-3 py-1.5 border rounded-md hover:bg-gray-50">Close</button>
+                    <button
+                      onClick={() => setSelected(null)}
+                      className="px-3 py-1.5 border rounded-md hover:bg-gray-50"
+                    >
+                      Close
+                    </button>
                   </div>
-                  <div className="mt-2 text-sm text-gray-600 capitalize">Category: {(selected.category || '').replace('_', ' ')}</div>
+                  <div className="mt-2 text-sm text-gray-600 capitalize">
+                    Category: {(selected.category || '').replace('_', ' ')}
+                  </div>
                   {selected.difficulty && (
                     <div className="mt-1">
                       <span className="inline-flex items-center rounded-md bg-gray-100 px-2 py-1 text-xs font-medium capitalize">
@@ -295,6 +315,7 @@ export default function Home() {
                       ))}
                     </div>
                   </div>
+
                   {Array.isArray(selected.tutorials) && selected.tutorials.length > 0 && (
                     <div className="mt-6">
                       <h4 className="font-semibold mb-2">Tutorials</h4>

@@ -1,4 +1,3 @@
-// app/discover/page.tsx
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
@@ -7,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/app/contexts/AuthContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { AlertCircle } from 'lucide-react'
 
 type StrArr = string[] | null | undefined
@@ -38,6 +38,7 @@ interface MatRow {
 }
 
 const FK_USER_FLY_MATS = 'user_fly_materials_material_id_fkey'
+const FK_USER_INV      = 'user_inventory_material_id_fkey'
 const FK_FLY_MATS      = 'fly_materials_material_id_fkey'
 
 export default function WhatCanITiePage() {
@@ -68,7 +69,7 @@ export default function WhatCanITiePage() {
         setGlobalFlies((data ?? []).map(r => ({ ...r, source: 'global' as const })))
       }
 
-      // 2) Global mapping (if present)
+      // 2) Global mapping (fly_materials) with explicit FK embed
       {
         const { data, error } = await supabase
           .from('fly_materials')
@@ -82,7 +83,7 @@ export default function WhatCanITiePage() {
             mat:materials!${FK_FLY_MATS} ( name, color )
           `)
         if (error) {
-          console.warn('fly_materials not available (ok if not created yet):', error.message || error)
+          console.warn('fly_materials not available:', error.message || error)
           setGlobalMatRows([])
         } else {
           const rows: MatRow[] = (data ?? []).map((r: any) => ({
@@ -97,24 +98,27 @@ export default function WhatCanITiePage() {
         }
       }
 
-      // 3) Inventory (user or none)
+      // 3) User inventory (correct table + FK)
       if (signedIn) {
         const { data, error } = await supabase
           .from('user_inventory')
-          .select('material_id')
+          .select(`
+            material_id,
+            mat:materials!${FK_USER_INV} ( name, color )
+          `)
           .eq('user_id', user!.id)
-          .limit(20000)
+          .limit(50000)
         if (error) throw error
         setInv((data ?? []).map((r: any) => ({
           material_id: r.material_id ?? null,
-          name: null,
-          color: null,
+          name: r.mat?.name ?? null,
+          color: r.mat?.color ?? null,
         })))
       } else {
         setInv([])
       }
 
-      // 4) User flies
+      // 4) My flies
       if (signedIn) {
         const { data, error } = await supabase
           .from('user_flies')
@@ -126,7 +130,7 @@ export default function WhatCanITiePage() {
         setUserFlies([])
       }
 
-      // 5) User fly materials (pin FK)
+      // 5) Materials for my flies (explicit FK)
       if (signedIn) {
         const { data, error } = await supabase
           .from('user_fly_materials')
@@ -166,6 +170,7 @@ export default function WhatCanITiePage() {
     }
   }
 
+  // Normalize inventory to handy lookups
   const invIds = useMemo(() => new Set(inv.map(i => i.material_id).filter(Boolean) as string[]), [inv])
   const invNames = useMemo(() => new Set(inv.map(i => (i.name ?? '').toLowerCase().trim()).filter(Boolean)), [inv])
 
@@ -176,6 +181,7 @@ export default function WhatCanITiePage() {
     return invNames.has(n)
   }
 
+  // Build material maps per fly
   const userReqByFly = useMemo(() => {
     const m = new Map<string, MatRow[]>()
     for (const r of userMatRows) {
@@ -196,6 +202,7 @@ export default function WhatCanITiePage() {
     return m
   }, [globalMatRows])
 
+  // Compute tie-eligible lists
   const myEligible = useMemo(() => {
     if (!signedIn) return []
     return userFlies.filter(f => {
@@ -211,6 +218,7 @@ export default function WhatCanITiePage() {
     })
   }, [globalFlies, globalReqByFly, invIds, invNames])
 
+  // Search filter
   const qLower = q.trim().toLowerCase()
   const showMy = useMemo(() => !qLower ? myEligible : myEligible.filter(f =>
     [f.name, f.category, f.difficulty ?? ''].some(s => s?.toLowerCase().includes(qLower))
@@ -220,6 +228,7 @@ export default function WhatCanITiePage() {
     [f.name, f.category, f.difficulty ?? ''].some(s => s?.toLowerCase().includes(qLower))
   ), [globalEligible, qLower])
 
+  // Status counts
   const fliesCount = globalFlies.length + userFlies.length
   const matRowsCount = globalMatRows.length + userMatRows.length
 
@@ -258,6 +267,7 @@ export default function WhatCanITiePage() {
         </div>
       )}
 
+      {/* Search */}
       <div className="mb-6">
         <input
           value={q}
@@ -267,6 +277,7 @@ export default function WhatCanITiePage() {
         />
       </div>
 
+      {/* My Flies eligible */}
       <section className="mb-8">
         <h2 className="text-xl font-semibold mb-2">My Flies — Eligible ({showMy.length})</h2>
         {showMy.length === 0 ? (
@@ -288,6 +299,7 @@ export default function WhatCanITiePage() {
         )}
       </section>
 
+      {/* Global eligible */}
       <section className="mb-12">
         <h2 className="text-xl font-semibold mb-2">Global — Eligible ({showGlobal.length})</h2>
         {showGlobal.length === 0 ? (

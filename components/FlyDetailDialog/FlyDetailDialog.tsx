@@ -1,4 +1,3 @@
-// components/FlyDetailDialog/FlyDetailDialog.tsx
 'use client'
 
 import { useMemo } from 'react'
@@ -54,6 +53,7 @@ export default function FlyDetailDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-3xl p-0">
+        {/* Header */}
         <div className="sticky top-0 z-10 border-b bg-background">
           <DialogHeader className="px-5 py-4">
             <div className="flex items-center justify-between gap-3">
@@ -70,6 +70,7 @@ export default function FlyDetailDialog({
           </DialogHeader>
         </div>
 
+        {/* Body */}
         <div className="max-h-[85vh] overflow-y-auto px-5 py-4" tabIndex={0} style={{ overscrollBehavior: 'contain' }}>
           <Tabs defaultValue="materials" className="w-full">
             <TabsList className="mb-3">
@@ -104,7 +105,13 @@ export default function FlyDetailDialog({
               <div className="space-y-2">
                 {fly?.tutorials?.length ? (
                   fly.tutorials.map((t, idx) => (
-                    <a key={idx} href={t.url} target="_blank" rel="noreferrer" className="block rounded-md border px-3 py-2 hover:bg-accent">
+                    <a
+                      key={idx}
+                      href={t.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block rounded-md border px-3 py-2 hover:bg-accent"
+                    >
                       <div className="font-medium">{t.title}</div>
                       <div className="text-sm text-muted-foreground">{t.tutorial_type}</div>
                     </a>
@@ -119,15 +126,24 @@ export default function FlyDetailDialog({
               <div className="space-y-3">
                 <div>
                   <div className="mb-1 text-sm font-medium">Target species</div>
-                  <div className="text-sm text-muted-foreground">{fly?.target_species?.length ? fly.target_species.join(', ') : '—'}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {fly?.target_species?.length ? fly.target_species.join(', ') : '—'}
+                  </div>
                 </div>
                 <div>
                   <div className="mb-1 text-sm font-medium">Colorways</div>
-                  <div className="text-sm text-muted-foreground">{fly?.colorways?.length ? fly.colorways.join(', ') : '—'}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {fly?.colorways?.length ? fly.colorways.join(', ') : '—'}
+                  </div>
                 </div>
                 {fly?.image_url ? (
                   <div className="rounded-lg border p-2">
-                    <img src={fly.image_url} alt={fly.name} className="mx-auto max-h-[360px] w-auto rounded-md object-contain" draggable={false} />
+                    <img
+                      src={fly.image_url}
+                      alt={fly.name}
+                      className="mx-auto max-h-[360px] w-auto rounded-md object-contain"
+                      draggable={false}
+                    />
                   </div>
                 ) : null}
               </div>
@@ -136,6 +152,7 @@ export default function FlyDetailDialog({
           <div className="h-2" />
         </div>
 
+        {/* Footer */}
         <div className="sticky bottom-0 z-10 border-t bg-background px-5 py-3">
           <div className="flex items-center justify-end gap-2">
             <Button variant="secondary" onClick={() => onOpenChange(false)}>Close</Button>
